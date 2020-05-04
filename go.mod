@@ -1,4 +1,4 @@
-module github.com/alxmsl/pn
+module github.com/alxmsl/rtpn
 
 go 1.13
 

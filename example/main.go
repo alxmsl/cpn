@@ -5,23 +5,23 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/alxmsl/pn"
-	"github.com/alxmsl/pn/place"
+	"github.com/alxmsl/rtpn"
+	"github.com/alxmsl/rtpn/place"
 )
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	var (
-		pin = pn.NewP("pin").
-			SetOptions(pn.WithContextOption(ctx)).
-			SetOptions(pn.WithPlaceOption(place.NewBlock()))
-		pout = pn.NewP("pout").
-			SetOptions(pn.WithContextOption(ctx)).
-			SetOptions(pn.WithPlaceOption(place.NewBlock()))
-		t1 = pn.NewT("t1")
+		pin = rtpn.NewP("pin").
+			SetOptions(rtpn.WithContextOption(ctx)).
+			SetOptions(rtpn.WithPlaceOption(place.NewBlock()))
+		pout = rtpn.NewP("pout").
+			SetOptions(rtpn.WithContextOption(ctx)).
+			SetOptions(rtpn.WithPlaceOption(place.NewBlock()))
+		t1 = rtpn.NewT("t1")
 	)
 
-	n := pn.NewPN()
+	n := rtpn.NewPN()
 	n.PT(pin, t1)
 	n.TP(t1, pout)
 	n.Run()
@@ -31,7 +31,7 @@ func main() {
 	go func() {
 		defer wg.Done()
 		for i := 0; i < 10; i += 1 {
-			pin.WriteCh() <- pn.NewM(i)
+			pin.WriteCh() <- rtpn.NewM(i)
 		}
 		cancel()
 	}()

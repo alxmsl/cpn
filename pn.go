@@ -1,4 +1,4 @@
-package pn
+package rtpn
 
 import "github.com/alxmsl/prmtvs/skm"
 
