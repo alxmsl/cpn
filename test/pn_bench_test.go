@@ -36,6 +36,81 @@ func BenchmarkBlockPTP(b *testing.B) {
 	}
 }
 
+func BenchmarkBlockPTPTP(b *testing.B) {
+	pin := rtpn.NewP("pin").
+		SetOptions(rtpn.WithContext(context.Background())).
+		SetOptions(rtpn.WithPlace(place.NewBlock()))
+	p1 := rtpn.NewP("p1").
+		SetOptions(rtpn.WithContext(context.Background())).
+		SetOptions(rtpn.WithPlace(place.NewBlock()))
+	pout := rtpn.NewP("pout").
+		SetOptions(rtpn.WithContext(context.Background())).
+		SetOptions(rtpn.WithPlace(place.NewBlock()))
+	t1 := rtpn.NewT("t1").
+		SetOptions(rtpn.WithFunction(transition.First))
+	t2 := rtpn.NewT("t2").
+		SetOptions(rtpn.WithFunction(transition.First))
+
+	n := rtpn.NewPN()
+	n.PT(pin, t1)
+	n.TP(t1, p1)
+	n.PT(p1, t2)
+	n.TP(t2, pout)
+	n.Run()
+
+	mm := make([]*rtpn.M, b.N)
+	for i := 0; i < b.N; i += 1 {
+		mm[i] = rtpn.NewM(i)
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i += 1 {
+		pin.WriteCh() <- mm[i]
+		pout.Read()
+	}
+}
+
+func BenchmarkBlockPTPTPTP(b *testing.B) {
+	pin := rtpn.NewP("pin").
+		SetOptions(rtpn.WithContext(context.Background())).
+		SetOptions(rtpn.WithPlace(place.NewBlock()))
+	p1 := rtpn.NewP("p1").
+		SetOptions(rtpn.WithContext(context.Background())).
+		SetOptions(rtpn.WithPlace(place.NewBlock()))
+	p2 := rtpn.NewP("p2").
+		SetOptions(rtpn.WithContext(context.Background())).
+		SetOptions(rtpn.WithPlace(place.NewBlock()))
+	pout := rtpn.NewP("pout").
+		SetOptions(rtpn.WithContext(context.Background())).
+		SetOptions(rtpn.WithPlace(place.NewBlock()))
+	t1 := rtpn.NewT("t1").
+		SetOptions(rtpn.WithFunction(transition.First))
+	t2 := rtpn.NewT("t2").
+		SetOptions(rtpn.WithFunction(transition.First))
+	t3 := rtpn.NewT("t3").
+		SetOptions(rtpn.WithFunction(transition.First))
+
+	n := rtpn.NewPN()
+	n.PT(pin, t1)
+	n.TP(t1, p1)
+	n.PT(p1, t2)
+	n.TP(t2, p2)
+	n.PT(p2, t3)
+	n.TP(t3, pout)
+	n.Run()
+
+	mm := make([]*rtpn.M, b.N)
+	for i := 0; i < b.N; i += 1 {
+		mm[i] = rtpn.NewM(i)
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i += 1 {
+		pin.WriteCh() <- mm[i]
+		pout.Read()
+	}
+}
+
 func BenchmarkQueuePTP(b *testing.B) {
 	pin := rtpn.NewP("pin").
 		SetOptions(rtpn.WithContext(context.Background())).
