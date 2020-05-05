@@ -7,18 +7,20 @@ import (
 
 	"github.com/alxmsl/rtpn"
 	"github.com/alxmsl/rtpn/place"
+	"github.com/alxmsl/rtpn/transition"
 )
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	var (
 		pin = rtpn.NewP("pin").
-			SetOptions(rtpn.WithContextOption(ctx)).
-			SetOptions(rtpn.WithPlaceOption(place.NewBlock()))
+			SetOptions(rtpn.WithContext(ctx)).
+			SetOptions(rtpn.WithPlace(place.NewBlock()))
 		pout = rtpn.NewP("pout").
-			SetOptions(rtpn.WithContextOption(ctx)).
-			SetOptions(rtpn.WithPlaceOption(place.NewBlock()))
-		t1 = rtpn.NewT("t1")
+			SetOptions(rtpn.WithContext(ctx)).
+			SetOptions(rtpn.WithPlace(place.NewBlock()))
+		t1 = rtpn.NewT("t1").
+			SetOptions(rtpn.WithFunction(transition.First))
 	)
 
 	n := rtpn.NewPN()

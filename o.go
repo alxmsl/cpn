@@ -2,11 +2,11 @@ package rtpn
 
 import "context"
 
-type Option interface {
-	Apply(p *P)
+type PlaceOption interface {
+	Apply(*P)
 }
 
-func WithContextOption(ctx context.Context) Option {
+func WithContext(ctx context.Context) PlaceOption {
 	return contextOption{ctx}
 }
 
@@ -18,14 +18,30 @@ func (o contextOption) Apply(p *P) {
 	p.ctx = o.ctx
 }
 
-func WithPlaceOption(place Place) Option {
-	return storageOption{place}
+func WithPlace(place Place) PlaceOption {
+	return placeOption{place}
 }
 
-type storageOption struct {
+type placeOption struct {
 	place Place
 }
 
-func (o storageOption) Apply(p *P) {
+func (o placeOption) Apply(p *P) {
 	p.place = o.place
+}
+
+type TransitionOption interface {
+	Apply(*T)
+}
+
+func WithFunction(fn Transition) TransitionOption {
+	return transitionOption{fn}
+}
+
+type transitionOption struct {
+	fn Transition
+}
+
+func (o transitionOption) Apply(t *T) {
+	t.fn = o.fn
 }

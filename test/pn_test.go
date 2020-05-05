@@ -8,6 +8,7 @@ import (
 
 	"github.com/alxmsl/rtpn"
 	"github.com/alxmsl/rtpn/place"
+	"github.com/alxmsl/rtpn/transition"
 )
 
 func Test(t *testing.T) {
@@ -20,12 +21,13 @@ var _ = Suite(&PNSuite{})
 
 func (s *PNSuite) TestPTP(c *C) {
 	pin := rtpn.NewP("pin").
-		SetOptions(rtpn.WithContextOption(context.Background())).
-		SetOptions(rtpn.WithPlaceOption(place.NewBlock()))
+		SetOptions(rtpn.WithContext(context.Background())).
+		SetOptions(rtpn.WithPlace(place.NewBlock()))
 	pout := rtpn.NewP("pout").
-		SetOptions(rtpn.WithContextOption(context.Background())).
-		SetOptions(rtpn.WithPlaceOption(place.NewBlock()))
-	t1 := rtpn.NewT("t1")
+		SetOptions(rtpn.WithContext(context.Background())).
+		SetOptions(rtpn.WithPlace(place.NewBlock()))
+	t1 := rtpn.NewT("t1").
+		SetOptions(rtpn.WithFunction(transition.First))
 
 	n := rtpn.NewPN()
 	n.PT(pin, t1)
@@ -36,7 +38,7 @@ func (s *PNSuite) TestPTP(c *C) {
 		pin.WriteCh() <- rtpn.NewM(i)
 		m, ok := pout.Read()
 		c.Assert(ok, Equals, true)
-		c.Assert(m.Value(), Equals, i)
+		c.Assert(m.Value().(int), Equals, i)
 		c.Assert(m.Path(), HasLen, 3)
 		c.Assert(m.Path()[0], Equals, "pin")
 		c.Assert(m.Path()[1], Equals, "t1")
@@ -46,15 +48,16 @@ func (s *PNSuite) TestPTP(c *C) {
 
 func (s *PNSuite) TestPPTP(c *C) {
 	p1 := rtpn.NewP("p1").
-		SetOptions(rtpn.WithContextOption(context.Background())).
-		SetOptions(rtpn.WithPlaceOption(place.NewBlock()))
+		SetOptions(rtpn.WithContext(context.Background())).
+		SetOptions(rtpn.WithPlace(place.NewBlock()))
 	p2 := rtpn.NewP("p2").
-		SetOptions(rtpn.WithContextOption(context.Background())).
-		SetOptions(rtpn.WithPlaceOption(place.NewBlock()))
+		SetOptions(rtpn.WithContext(context.Background())).
+		SetOptions(rtpn.WithPlace(place.NewBlock()))
 	pout := rtpn.NewP("pout").
-		SetOptions(rtpn.WithContextOption(context.Background())).
-		SetOptions(rtpn.WithPlaceOption(place.NewBlock()))
-	t1 := rtpn.NewT("t1")
+		SetOptions(rtpn.WithContext(context.Background())).
+		SetOptions(rtpn.WithPlace(place.NewBlock()))
+	t1 := rtpn.NewT("t1").
+		SetOptions(rtpn.WithFunction(transition.First))
 
 	n := rtpn.NewPN()
 	n.PT(p1, t1)
@@ -67,7 +70,7 @@ func (s *PNSuite) TestPPTP(c *C) {
 		p2.WriteCh() <- rtpn.NewM(i)
 		m, ok := pout.Read()
 		c.Assert(ok, Equals, true)
-		c.Assert(m.Value(), Equals, i*2)
+		c.Assert(m.Value().(int), Equals, i)
 		c.Assert(m.Path(), HasLen, 3)
 		c.Assert(m.Path()[1], Equals, "t1")
 		c.Assert(m.Path()[2], Equals, "pout")
@@ -76,16 +79,18 @@ func (s *PNSuite) TestPPTP(c *C) {
 
 func (s *PNSuite) TestPPTTP(c *C) {
 	p1 := rtpn.NewP("p1").
-		SetOptions(rtpn.WithContextOption(context.Background())).
-		SetOptions(rtpn.WithPlaceOption(place.NewBlock()))
+		SetOptions(rtpn.WithContext(context.Background())).
+		SetOptions(rtpn.WithPlace(place.NewBlock()))
 	p2 := rtpn.NewP("p2").
-		SetOptions(rtpn.WithContextOption(context.Background())).
-		SetOptions(rtpn.WithPlaceOption(place.NewBlock()))
+		SetOptions(rtpn.WithContext(context.Background())).
+		SetOptions(rtpn.WithPlace(place.NewBlock()))
 	pout := rtpn.NewP("pout").
-		SetOptions(rtpn.WithContextOption(context.Background())).
-		SetOptions(rtpn.WithPlaceOption(place.NewBlock()))
-	t1 := rtpn.NewT("t1")
-	t2 := rtpn.NewT("t2")
+		SetOptions(rtpn.WithContext(context.Background())).
+		SetOptions(rtpn.WithPlace(place.NewBlock()))
+	t1 := rtpn.NewT("t1").
+		SetOptions(rtpn.WithFunction(transition.First))
+	t2 := rtpn.NewT("t2").
+		SetOptions(rtpn.WithFunction(transition.First))
 
 	n := rtpn.NewPN()
 	n.PT(p1, t1)
@@ -102,6 +107,6 @@ func (s *PNSuite) TestPPTTP(c *C) {
 
 		m, ok := pout.Read()
 		c.Assert(ok, Equals, true)
-		c.Assert(m.Value(), Equals, i*2)
+		c.Assert(m.Value().(int), Equals, i)
 	}
 }

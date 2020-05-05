@@ -6,11 +6,15 @@ import (
 	"github.com/alxmsl/prmtvs/skm"
 )
 
+type Transition func(in []*M) *M
+
 type T struct {
 	n string
 
 	ins  *skm.SKM
 	outs *skm.SKM
+
+	fn Transition
 }
 
 func NewT(name string) *T {
@@ -19,6 +23,13 @@ func NewT(name string) *T {
 
 		ins:  skm.NewSKM(),
 		outs: skm.NewSKM(),
+	}
+	return t
+}
+
+func (t *T) SetOptions(opts ...TransitionOption) *T {
+	for _, opt := range opts {
+		opt.Apply(t)
 	}
 	return t
 }
@@ -47,10 +58,7 @@ func (t *T) Run() {
 				break
 			}
 
-			m := mm[0]
-			for i := 1; i < t.ins.Len(); i += 1 {
-				m.v += mm[i].v
-			}
+			m := t.fn(mm)
 			m.path = append(m.path, t.Name())
 			m.word = append(m.word, t.Name())
 

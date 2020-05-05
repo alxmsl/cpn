@@ -1,12 +1,12 @@
 package rtpn
 
 type M struct {
-	v    int
+	v    interface{}
 	path []string
 	word []string
 }
 
-func NewM(value int) *M {
+func NewM(value interface{}) *M {
 	return &M{
 		v: value,
 
@@ -20,7 +20,7 @@ func (m *M) Path() []string {
 	return m.path
 }
 
-func (m *M) Value() int {
+func (m *M) Value() interface{} {
 	return m.v
 }
 

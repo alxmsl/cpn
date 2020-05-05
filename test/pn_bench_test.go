@@ -6,16 +6,18 @@ import (
 
 	"github.com/alxmsl/rtpn"
 	"github.com/alxmsl/rtpn/place"
+	"github.com/alxmsl/rtpn/transition"
 )
 
 func BenchmarkBlockPTP(b *testing.B) {
 	pin := rtpn.NewP("pin").
-		SetOptions(rtpn.WithContextOption(context.Background())).
-		SetOptions(rtpn.WithPlaceOption(place.NewBlock()))
+		SetOptions(rtpn.WithContext(context.Background())).
+		SetOptions(rtpn.WithPlace(place.NewBlock()))
 	pout := rtpn.NewP("pout").
-		SetOptions(rtpn.WithContextOption(context.Background())).
-		SetOptions(rtpn.WithPlaceOption(place.NewBlock()))
-	t1 := rtpn.NewT("t1")
+		SetOptions(rtpn.WithContext(context.Background())).
+		SetOptions(rtpn.WithPlace(place.NewBlock()))
+	t1 := rtpn.NewT("t1").
+		SetOptions(rtpn.WithFunction(transition.First))
 
 	n := rtpn.NewPN()
 	n.PT(pin, t1)
@@ -36,12 +38,13 @@ func BenchmarkBlockPTP(b *testing.B) {
 
 func BenchmarkQueuePTP(b *testing.B) {
 	pin := rtpn.NewP("pin").
-		SetOptions(rtpn.WithContextOption(context.Background())).
-		SetOptions(rtpn.WithPlaceOption(place.NewQueue(100)))
+		SetOptions(rtpn.WithContext(context.Background())).
+		SetOptions(rtpn.WithPlace(place.NewQueue(100)))
 	pout := rtpn.NewP("pout").
-		SetOptions(rtpn.WithContextOption(context.Background())).
-		SetOptions(rtpn.WithPlaceOption(place.NewQueue(100)))
-	t1 := rtpn.NewT("t1")
+		SetOptions(rtpn.WithContext(context.Background())).
+		SetOptions(rtpn.WithPlace(place.NewQueue(100)))
+	t1 := rtpn.NewT("t1").
+		SetOptions(rtpn.WithFunction(transition.First))
 
 	n := rtpn.NewPN()
 	n.PT(pin, t1)
@@ -62,15 +65,16 @@ func BenchmarkQueuePTP(b *testing.B) {
 
 func BenchmarkPPTP(b *testing.B) {
 	p1 := rtpn.NewP("p1").
-		SetOptions(rtpn.WithContextOption(context.Background())).
-		SetOptions(rtpn.WithPlaceOption(place.NewBlock()))
+		SetOptions(rtpn.WithContext(context.Background())).
+		SetOptions(rtpn.WithPlace(place.NewBlock()))
 	p2 := rtpn.NewP("p2").
-		SetOptions(rtpn.WithContextOption(context.Background())).
-		SetOptions(rtpn.WithPlaceOption(place.NewBlock()))
+		SetOptions(rtpn.WithContext(context.Background())).
+		SetOptions(rtpn.WithPlace(place.NewBlock()))
 	pout := rtpn.NewP("pout").
-		SetOptions(rtpn.WithContextOption(context.Background())).
-		SetOptions(rtpn.WithPlaceOption(place.NewBlock()))
-	t1 := rtpn.NewT("t1")
+		SetOptions(rtpn.WithContext(context.Background())).
+		SetOptions(rtpn.WithPlace(place.NewBlock()))
+	t1 := rtpn.NewT("t1").
+		SetOptions(rtpn.WithFunction(transition.First))
 
 	n := rtpn.NewPN()
 	n.PT(p1, t1)
@@ -93,16 +97,18 @@ func BenchmarkPPTP(b *testing.B) {
 
 func BenchmarkPPTT(b *testing.B) {
 	p1 := rtpn.NewP("p1").
-		SetOptions(rtpn.WithContextOption(context.Background())).
-		SetOptions(rtpn.WithPlaceOption(place.NewBlock()))
+		SetOptions(rtpn.WithContext(context.Background())).
+		SetOptions(rtpn.WithPlace(place.NewBlock()))
 	p2 := rtpn.NewP("p2").
-		SetOptions(rtpn.WithContextOption(context.Background())).
-		SetOptions(rtpn.WithPlaceOption(place.NewBlock()))
+		SetOptions(rtpn.WithContext(context.Background())).
+		SetOptions(rtpn.WithPlace(place.NewBlock()))
 	pout := rtpn.NewP("pout").
-		SetOptions(rtpn.WithContextOption(context.Background())).
-		SetOptions(rtpn.WithPlaceOption(place.NewBlock()))
-	t1 := rtpn.NewT("t1")
-	t2 := rtpn.NewT("t2")
+		SetOptions(rtpn.WithContext(context.Background())).
+		SetOptions(rtpn.WithPlace(place.NewBlock()))
+	t1 := rtpn.NewT("t1").
+		SetOptions(rtpn.WithFunction(transition.First))
+	t2 := rtpn.NewT("t2").
+		SetOptions(rtpn.WithFunction(transition.First))
 
 	n := rtpn.NewPN()
 	n.PT(p1, t1)
