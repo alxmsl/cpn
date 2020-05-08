@@ -1,4 +1,4 @@
-package place
+package memory
 
 import "github.com/alxmsl/rtpn"
 
@@ -10,10 +10,10 @@ func NewQueue(size int) *Queue {
 	return &Queue{make(chan *rtpn.M, size)}
 }
 
-func (b Queue) ReadCh() <-chan *rtpn.M {
+func (b Queue) In() chan<- *rtpn.M {
 	return b.q
 }
 
-func (b Queue) WriteCh() chan<- *rtpn.M {
+func (b Queue) Out() <-chan *rtpn.M {
 	return b.q
 }

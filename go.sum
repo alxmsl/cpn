@@ -1,5 +1,7 @@
 github.com/alxmsl/prmtvs v1.0.0 h1:L1jxc0HGiLDpuOD6nK/COdXBXmB5sh1HvAHE6UTSUuU=
 github.com/alxmsl/prmtvs v1.0.0/go.mod h1:sh+W/7yxNXNHg9MHSTYLTyy04eJlwyo7j2XJRqlPZ0Q=
+github.com/gorilla/mux v1.7.4 h1:VuZ8uybHlWmqV03+zRzdwKL4tUnIp1MAQtp1mIFE1bc=
+github.com/gorilla/mux v1.7.4/go.mod h1:DVbg23sWSpFRCP0SfiEN6jmj59UnW/n46BH5rLB71So=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0 h1:45sCR5RtlFHMR4UwH9sdQ5TC8v0qDQCHnXt+kaKSTVE=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=

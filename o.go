@@ -30,6 +30,16 @@ func (o placeOption) Apply(p *P) {
 	p.place = o.place
 }
 
+func IsTermination() PlaceOption {
+	return terminationOption{}
+}
+
+type terminationOption struct{}
+
+func (o terminationOption) Apply(p *P) {
+	p.t = true
+}
+
 type TransitionOption interface {
 	Apply(*T)
 }

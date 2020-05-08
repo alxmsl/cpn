@@ -12,35 +12,26 @@ import (
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
-	var (
-		pin = rtpn.NewP("pin").
-			SetOptions(rtpn.WithContext(ctx)).
-			SetOptions(rtpn.WithPlace(place.NewBlock()))
-		pout = rtpn.NewP("pout").
-			SetOptions(rtpn.WithContext(ctx)).
-			SetOptions(rtpn.WithPlace(place.NewBlock()))
-		t1 = rtpn.NewT("t1").
-			SetOptions(rtpn.WithFunction(transition.First))
-	)
-
 	n := rtpn.NewPN()
-	n.PT(pin, t1)
-	n.TP(t1, pout)
-	n.Run()
+	n.P("pin", rtpn.WithContext(ctx), rtpn.WithPlace(place.NewBlock()))
+	n.T("t1", rtpn.WithFunction(transition.First))
+	n.P("pout", rtpn.WithContext(ctx), rtpn.WithPlace(place.NewBlock()))
+
+	n.PT("pin", "t1").TP("t1", "pout").Run()
 
 	wg := sync.WaitGroup{}
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
 		for i := 0; i < 10; i += 1 {
-			pin.WriteCh() <- rtpn.NewM(i)
+			n.P("pin").In() <- rtpn.NewM(i)
 		}
 		cancel()
 	}()
 	go func() {
 		defer wg.Done()
 		for {
-			m, ok := pout.Read()
+			m, ok := n.P("pout").Read()
 			if !ok {
 				return
 			}

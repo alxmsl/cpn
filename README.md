@@ -2,6 +2,13 @@
 
 Real-time Petri Net implementation based on set of goroutines and channels
 
+## Examples
+
+Here're several example for Petri Net usage:
+- [Simple Petri Net](./example/ptp/main.go) is an elementary network contains two places `in` and `out` and just one 
+ transition
+- [Echo server](./example/echo/README.md) is an implementation of HTTP echo server as a Petri Net 
+
 ## Benchmark
 
 Solution overhead is about 3-5μs per transition

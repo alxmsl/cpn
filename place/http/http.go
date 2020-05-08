@@ -1,0 +1,93 @@
+package http
+
+import (
+	"context"
+	"net/http"
+
+	"github.com/alxmsl/rtpn"
+	"github.com/alxmsl/rtpn/place"
+)
+
+type RequestContext struct {
+	done chan struct{}
+
+	r *http.Request
+	w http.ResponseWriter
+}
+
+func (ctx *RequestContext) Flush() {
+	close(ctx.done)
+}
+
+func (ctx *RequestContext) Response() http.ResponseWriter {
+	return ctx.w
+}
+
+func (ctx *RequestContext) Request() *http.Request {
+	return ctx.r
+}
+
+func (ctx *RequestContext) Wait() {
+	<-ctx.done
+}
+
+type HttpHandler func(ctx *RequestContext)
+
+func HttpProcessor(handler HttpHandler) rtpn.Transition {
+	return func(mm []*rtpn.M) *rtpn.M {
+		m := mm[0]
+		handler(m.Value().(*RequestContext))
+		return m
+	}
+}
+
+type HttpResponse struct {
+	*place.Block
+}
+
+func NewHttpResponse() *HttpResponse {
+	return &HttpResponse{place.NewBlock()}
+}
+
+func (p *HttpResponse) Run() *HttpResponse {
+	go func() {
+		for m := range p.Out() {
+			m.Value().(*RequestContext).Flush()
+		}
+	}()
+	return p
+}
+
+type HttpRequest struct {
+	*place.Block
+
+	addr, pattern string
+	cancel        context.CancelFunc
+}
+
+func NewHttpRequest(addr, pattern string, cancel context.CancelFunc) *HttpRequest {
+	return &HttpRequest{
+		place.NewBlock(),
+		addr, pattern,
+		cancel,
+	}
+}
+
+func (p *HttpRequest) Run() *HttpRequest {
+	http.HandleFunc(p.pattern, func(w http.ResponseWriter, r *http.Request) {
+		ctx := &RequestContext{
+			done: make(chan struct{}),
+			r:    r,
+			w:    w,
+		}
+		p.In() <- rtpn.NewM(ctx)
+		ctx.Wait()
+	})
+	go func() {
+		if err := http.ListenAndServe(p.addr, nil); err != http.ErrServerClosed {
+			p.cancel()
+			return
+		}
+	}()
+	return p
+}

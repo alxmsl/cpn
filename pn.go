@@ -15,19 +15,31 @@ func NewPN() *PN {
 	return pn
 }
 
-func (pn *PN) PT(p *P, t *T) *PN {
+func (pn *PN) P(name string, opts ...PlaceOption) *P {
+	if v, ok := pn.pp.GetByKey(name); ok {
+		return v.(*P)
+	}
+	p := NewP(name).SetOptions(opts...)
 	pn.pp.Add(p.Name(), p)
-	pn.tt.Add(t.Name(), t)
+	return p
+}
 
-	t.ins.Add(p.Name(), p)
+func (pn *PN) PT(p, t string) *PN {
+	pn.T(t).ins.Add(pn.P(p).Name(), pn.P(p))
 	return pn
 }
 
-func (pn *PN) TP(t *T, p *P) *PN {
-	pn.pp.Add(p.Name(), p)
+func (pn *PN) T(name string, opts ...TransitionOption) *T {
+	if v, ok := pn.tt.GetByKey(name); ok {
+		return v.(*T)
+	}
+	t := NewT(name).SetOptions(opts...)
 	pn.tt.Add(t.Name(), t)
+	return t
+}
 
-	t.outs.Add(p.Name(), p)
+func (pn *PN) TP(t, p string) *PN {
+	pn.T(t).outs.Add(pn.P(p).Name(), pn.P(p))
 	return pn
 }
 

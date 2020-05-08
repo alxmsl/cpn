@@ -1,13 +1,13 @@
 package test
 
 import (
+	"github.com/alxmsl/rtpn/place"
 	. "gopkg.in/check.v1"
 
 	"context"
 	"testing"
 
 	"github.com/alxmsl/rtpn"
-	"github.com/alxmsl/rtpn/place"
 	"github.com/alxmsl/rtpn/transition"
 )
 
@@ -20,23 +20,16 @@ type PNSuite struct{}
 var _ = Suite(&PNSuite{})
 
 func (s *PNSuite) TestPTP(c *C) {
-	pin := rtpn.NewP("pin").
-		SetOptions(rtpn.WithContext(context.Background())).
-		SetOptions(rtpn.WithPlace(place.NewBlock()))
-	pout := rtpn.NewP("pout").
-		SetOptions(rtpn.WithContext(context.Background())).
-		SetOptions(rtpn.WithPlace(place.NewBlock()))
-	t1 := rtpn.NewT("t1").
-		SetOptions(rtpn.WithFunction(transition.First))
-
 	n := rtpn.NewPN()
-	n.PT(pin, t1)
-	n.TP(t1, pout)
-	n.Run()
+	n.P("pin", rtpn.WithContext(context.Background()), rtpn.WithPlace(place.NewBlock()))
+	n.T("t1", rtpn.WithFunction(transition.First))
+	n.P("pout", rtpn.WithContext(context.Background()), rtpn.WithPlace(place.NewBlock()))
+
+	n.PT("pin", "t1").TP("t1", "pout").Run()
 
 	for i := 0; i < 1000; i += 1 {
-		pin.WriteCh() <- rtpn.NewM(i)
-		m, ok := pout.Read()
+		n.P("pin").In() <- rtpn.NewM(i)
+		m, ok := n.P("pout").Read()
 		c.Assert(ok, Equals, true)
 		c.Assert(m.Value().(int), Equals, i)
 		c.Assert(m.Path(), HasLen, 3)
@@ -47,28 +40,18 @@ func (s *PNSuite) TestPTP(c *C) {
 }
 
 func (s *PNSuite) TestPPTP(c *C) {
-	p1 := rtpn.NewP("p1").
-		SetOptions(rtpn.WithContext(context.Background())).
-		SetOptions(rtpn.WithPlace(place.NewBlock()))
-	p2 := rtpn.NewP("p2").
-		SetOptions(rtpn.WithContext(context.Background())).
-		SetOptions(rtpn.WithPlace(place.NewBlock()))
-	pout := rtpn.NewP("pout").
-		SetOptions(rtpn.WithContext(context.Background())).
-		SetOptions(rtpn.WithPlace(place.NewBlock()))
-	t1 := rtpn.NewT("t1").
-		SetOptions(rtpn.WithFunction(transition.First))
-
 	n := rtpn.NewPN()
-	n.PT(p1, t1)
-	n.PT(p2, t1)
-	n.TP(t1, pout)
-	n.Run()
+	n.P("p1", rtpn.WithContext(context.Background()), rtpn.WithPlace(place.NewBlock()))
+	n.P("p2", rtpn.WithContext(context.Background()), rtpn.WithPlace(place.NewBlock()))
+	n.T("t1", rtpn.WithFunction(transition.First))
+	n.P("pout", rtpn.WithContext(context.Background()), rtpn.WithPlace(place.NewBlock()))
+
+	n.PT("p1", "t1").PT("p2", "t1").TP("t1", "pout").Run()
 
 	for i := 0; i < 1000; i += 1 {
-		p1.WriteCh() <- rtpn.NewM(i)
-		p2.WriteCh() <- rtpn.NewM(i)
-		m, ok := pout.Read()
+		n.P("p1").In() <- rtpn.NewM(i)
+		n.P("p2").In() <- rtpn.NewM(i)
+		m, ok := n.P("pout").Read()
 		c.Assert(ok, Equals, true)
 		c.Assert(m.Value().(int), Equals, i)
 		c.Assert(m.Path(), HasLen, 3)
@@ -78,34 +61,21 @@ func (s *PNSuite) TestPPTP(c *C) {
 }
 
 func (s *PNSuite) TestPPTTP(c *C) {
-	p1 := rtpn.NewP("p1").
-		SetOptions(rtpn.WithContext(context.Background())).
-		SetOptions(rtpn.WithPlace(place.NewBlock()))
-	p2 := rtpn.NewP("p2").
-		SetOptions(rtpn.WithContext(context.Background())).
-		SetOptions(rtpn.WithPlace(place.NewBlock()))
-	pout := rtpn.NewP("pout").
-		SetOptions(rtpn.WithContext(context.Background())).
-		SetOptions(rtpn.WithPlace(place.NewBlock()))
-	t1 := rtpn.NewT("t1").
-		SetOptions(rtpn.WithFunction(transition.First))
-	t2 := rtpn.NewT("t2").
-		SetOptions(rtpn.WithFunction(transition.First))
-
 	n := rtpn.NewPN()
-	n.PT(p1, t1)
-	n.PT(p2, t1)
-	n.PT(p1, t2)
-	n.PT(p2, t2)
-	n.TP(t1, pout)
-	n.TP(t2, pout)
-	n.Run()
+	n.P("p1", rtpn.WithContext(context.Background()), rtpn.WithPlace(place.NewBlock()))
+	n.P("p2", rtpn.WithContext(context.Background()), rtpn.WithPlace(place.NewBlock()))
+	n.T("t1", rtpn.WithFunction(transition.First))
+	n.T("t2", rtpn.WithFunction(transition.First))
+	n.P("pout", rtpn.WithContext(context.Background()), rtpn.WithPlace(place.NewBlock()))
+
+	n.PT("p1", "t1").PT("p2", "t1").PT("p1", "t2").PT("p2", "t2").
+		TP("t1", "pout").TP("t2", "pout").Run()
 
 	for i := 0; i < 1000; i += 1 {
-		p1.WriteCh() <- rtpn.NewM(i)
-		p2.WriteCh() <- rtpn.NewM(i)
+		n.P("p1").In() <- rtpn.NewM(i)
+		n.P("p2").In() <- rtpn.NewM(i)
 
-		m, ok := pout.Read()
+		m, ok := n.P("pout").Read()
 		c.Assert(ok, Equals, true)
 		c.Assert(m.Value().(int), Equals, i)
 	}

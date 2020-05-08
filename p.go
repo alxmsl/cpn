@@ -7,8 +7,8 @@ import (
 )
 
 type Place interface {
-	ReadCh() <-chan *M
-	WriteCh() chan<- *M
+	In() chan<- *M
+	Out() <-chan *M
 }
 
 type P struct {
@@ -23,6 +23,7 @@ type P struct {
 	// Storage implementation
 	place Place
 	s     int64
+	t     bool
 }
 
 func NewP(name string) *P {
@@ -60,17 +61,18 @@ func (p *P) Ready() bool {
 func (p *P) Run() {
 	go func() {
 		for m := range p.in {
-			//p.storage <- m
-			p.place.WriteCh() <- m
+			p.place.In() <- m
 		}
 	}()
 
+	if p.t {
+		return
+	}
 	go func() {
 		closed := false
 		for !closed {
 			select {
-			//case m, ok := <-p.storage:
-			case m, ok := <-p.place.ReadCh():
+			case m, ok := <-p.place.Out():
 				if !ok {
 					closed = true
 					break
@@ -90,6 +92,13 @@ func (p *P) Run() {
 	}()
 }
 
-func (p *P) WriteCh() chan<- *M {
-	return p.place.WriteCh()
+func (p *P) In() chan<- *M {
+	return p.place.In()
+}
+
+func (p *P) Out() <-chan *M {
+	if !p.t {
+		return nil
+	}
+	return p.place.Out()
 }
