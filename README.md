@@ -1,6 +1,6 @@
-# Real-time Petri Net
+# Concurrent Petri Net
 
-Real-time Petri Net implementation based on set of goroutines and channels
+Petri Net implementation based on golang concurrency patterns such as goroutines and channels
 
 ## Examples
 
