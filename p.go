@@ -9,7 +9,14 @@ import (
 type Place interface {
 	In() chan<- *M
 	Out() <-chan *M
+	Close()
 }
+
+const (
+	stateActive = 1 << 0
+	stateClosed = 1 << 1
+	stateReady  = 1 << 2
+)
 
 type P struct {
 	lock sync.Mutex
@@ -55,7 +62,7 @@ func (p *P) Read() (*M, bool) {
 
 func (p *P) Ready() bool {
 	v := atomic.LoadInt64(&p.s)
-	return v > 0
+	return v&(stateReady|stateClosed) > 0x0
 }
 
 func (p *P) Run() {
@@ -63,31 +70,37 @@ func (p *P) Run() {
 		for m := range p.in {
 			p.place.In() <- m
 		}
+		if p.t {
+			p.place.Close()
+			close(p.out)
+		}
 	}()
 
+	atomic.AddInt64(&p.s, stateActive)
 	if p.t {
 		return
 	}
 	go func() {
-		closed := false
-		for !closed {
+		for p.s&stateClosed == 0x0 {
 			select {
 			case m, ok := <-p.place.Out():
 				if !ok {
-					closed = true
+					atomic.AddInt64(&p.s, stateClosed)
 					break
 				}
-				atomic.AddInt64(&p.s, 1)
+				atomic.AddInt64(&p.s, stateReady)
 
 				m.path = append(m.path, p.Name())
 				p.out <- m
 
-				atomic.AddInt64(&p.s, -1)
+				atomic.AddInt64(&p.s, -stateReady)
 				p.lock.Unlock()
 			case <-p.ctx.Done():
-				closed = true
+				atomic.AddInt64(&p.s, stateClosed)
 			}
 		}
+		close(p.in)
+		p.place.Close()
 		close(p.out)
 	}()
 }

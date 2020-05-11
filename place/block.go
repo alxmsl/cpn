@@ -10,6 +10,10 @@ func NewBlock() *Block {
 	return &Block{make(chan *cpn.M)}
 }
 
+func (b Block) Close() {
+	close(b.ch)
+}
+
 func (b Block) In() chan<- *cpn.M {
 	return b.ch
 }

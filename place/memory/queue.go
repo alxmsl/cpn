@@ -10,10 +10,14 @@ func NewQueue(size int) *Queue {
 	return &Queue{make(chan *cpn.M, size)}
 }
 
-func (b Queue) In() chan<- *cpn.M {
-	return b.q
+func (q Queue) Close() {
+	close(q.q)
 }
 
-func (b Queue) Out() <-chan *cpn.M {
-	return b.q
+func (q Queue) In() chan<- *cpn.M {
+	return q.q
+}
+
+func (q Queue) Out() <-chan *cpn.M {
+	return q.q
 }
