@@ -4,23 +4,23 @@ import (
 	"context"
 	"testing"
 
-	"github.com/alxmsl/rtpn"
-	"github.com/alxmsl/rtpn/place"
-	"github.com/alxmsl/rtpn/place/memory"
-	"github.com/alxmsl/rtpn/transition"
+	"github.com/alxmsl/cpn"
+	"github.com/alxmsl/cpn/place"
+	"github.com/alxmsl/cpn/place/memory"
+	"github.com/alxmsl/cpn/transition"
 )
 
 func BenchmarkBlockPTP(b *testing.B) {
-	n := rtpn.NewPN()
-	n.P("pin", rtpn.WithContext(context.Background()), rtpn.WithPlace(place.NewBlock()))
-	n.T("t1", rtpn.WithFunction(transition.First))
-	n.P("pout", rtpn.WithContext(context.Background()), rtpn.WithPlace(place.NewBlock()))
+	n := cpn.NewPN()
+	n.P("pin", cpn.WithContext(context.Background()), cpn.WithPlace(place.NewBlock()))
+	n.T("t1", cpn.WithFunction(transition.First))
+	n.P("pout", cpn.WithContext(context.Background()), cpn.WithPlace(place.NewBlock()))
 
 	n.PT("pin", "t1").TP("t1", "pout").Run()
 
-	mm := make([]*rtpn.M, b.N)
+	mm := make([]*cpn.M, b.N)
 	for i := 0; i < b.N; i += 1 {
-		mm[i] = rtpn.NewM(i)
+		mm[i] = cpn.NewM(i)
 	}
 
 	b.ResetTimer()
@@ -31,18 +31,18 @@ func BenchmarkBlockPTP(b *testing.B) {
 }
 
 func BenchmarkBlockPTPTP(b *testing.B) {
-	n := rtpn.NewPN()
-	n.P("pin", rtpn.WithContext(context.Background()), rtpn.WithPlace(place.NewBlock()))
-	n.P("p1", rtpn.WithContext(context.Background()), rtpn.WithPlace(place.NewBlock()))
-	n.P("pout", rtpn.WithContext(context.Background()), rtpn.WithPlace(place.NewBlock()))
-	n.T("t1", rtpn.WithFunction(transition.First))
-	n.T("t2", rtpn.WithFunction(transition.First))
+	n := cpn.NewPN()
+	n.P("pin", cpn.WithContext(context.Background()), cpn.WithPlace(place.NewBlock()))
+	n.P("p1", cpn.WithContext(context.Background()), cpn.WithPlace(place.NewBlock()))
+	n.P("pout", cpn.WithContext(context.Background()), cpn.WithPlace(place.NewBlock()))
+	n.T("t1", cpn.WithFunction(transition.First))
+	n.T("t2", cpn.WithFunction(transition.First))
 
 	n.PT("pin", "t1").TP("t1", "p1").PT("p1", "t2").TP("t2", "pout").Run()
 
-	mm := make([]*rtpn.M, b.N)
+	mm := make([]*cpn.M, b.N)
 	for i := 0; i < b.N; i += 1 {
-		mm[i] = rtpn.NewM(i)
+		mm[i] = cpn.NewM(i)
 	}
 
 	b.ResetTimer()
@@ -53,21 +53,21 @@ func BenchmarkBlockPTPTP(b *testing.B) {
 }
 
 func BenchmarkBlockPTPTPTP(b *testing.B) {
-	n := rtpn.NewPN()
-	n.P("pin", rtpn.WithContext(context.Background()), rtpn.WithPlace(place.NewBlock()))
-	n.P("p1", rtpn.WithContext(context.Background()), rtpn.WithPlace(place.NewBlock()))
-	n.P("p2", rtpn.WithContext(context.Background()), rtpn.WithPlace(place.NewBlock()))
-	n.P("pout", rtpn.WithContext(context.Background()), rtpn.WithPlace(place.NewBlock()))
-	n.T("t1", rtpn.WithFunction(transition.First))
-	n.T("t2", rtpn.WithFunction(transition.First))
-	n.T("t3", rtpn.WithFunction(transition.First))
+	n := cpn.NewPN()
+	n.P("pin", cpn.WithContext(context.Background()), cpn.WithPlace(place.NewBlock()))
+	n.P("p1", cpn.WithContext(context.Background()), cpn.WithPlace(place.NewBlock()))
+	n.P("p2", cpn.WithContext(context.Background()), cpn.WithPlace(place.NewBlock()))
+	n.P("pout", cpn.WithContext(context.Background()), cpn.WithPlace(place.NewBlock()))
+	n.T("t1", cpn.WithFunction(transition.First))
+	n.T("t2", cpn.WithFunction(transition.First))
+	n.T("t3", cpn.WithFunction(transition.First))
 
 	n.PT("pin", "t1").TP("t1", "p1").PT("p1", "t2").TP("t2", "p2").PT("p2", "t3").
 		TP("t3", "pout").Run()
 
-	mm := make([]*rtpn.M, b.N)
+	mm := make([]*cpn.M, b.N)
 	for i := 0; i < b.N; i += 1 {
-		mm[i] = rtpn.NewM(i)
+		mm[i] = cpn.NewM(i)
 	}
 
 	b.ResetTimer()
@@ -78,16 +78,16 @@ func BenchmarkBlockPTPTPTP(b *testing.B) {
 }
 
 func BenchmarkQueuePTP(b *testing.B) {
-	n := rtpn.NewPN()
-	n.P("pin", rtpn.WithContext(context.Background()), rtpn.WithPlace(memory.NewQueue(100)))
-	n.T("t1", rtpn.WithFunction(transition.First))
-	n.P("pout", rtpn.WithContext(context.Background()), rtpn.WithPlace(memory.NewQueue(100)))
+	n := cpn.NewPN()
+	n.P("pin", cpn.WithContext(context.Background()), cpn.WithPlace(memory.NewQueue(100)))
+	n.T("t1", cpn.WithFunction(transition.First))
+	n.P("pout", cpn.WithContext(context.Background()), cpn.WithPlace(memory.NewQueue(100)))
 
 	n.PT("pin", "t1").TP("t1", "pout").Run()
 
-	mm := make([]*rtpn.M, b.N)
+	mm := make([]*cpn.M, b.N)
 	for i := 0; i < b.N; i += 1 {
-		mm[i] = rtpn.NewM(i)
+		mm[i] = cpn.NewM(i)
 	}
 
 	b.ResetTimer()
@@ -98,17 +98,17 @@ func BenchmarkQueuePTP(b *testing.B) {
 }
 
 func BenchmarkPPTP(b *testing.B) {
-	n := rtpn.NewPN()
-	n.P("p1", rtpn.WithContext(context.Background()), rtpn.WithPlace(place.NewBlock()))
-	n.P("p2", rtpn.WithContext(context.Background()), rtpn.WithPlace(place.NewBlock()))
-	n.T("t1", rtpn.WithFunction(transition.First))
-	n.P("pout", rtpn.WithContext(context.Background()), rtpn.WithPlace(place.NewBlock()))
+	n := cpn.NewPN()
+	n.P("p1", cpn.WithContext(context.Background()), cpn.WithPlace(place.NewBlock()))
+	n.P("p2", cpn.WithContext(context.Background()), cpn.WithPlace(place.NewBlock()))
+	n.T("t1", cpn.WithFunction(transition.First))
+	n.P("pout", cpn.WithContext(context.Background()), cpn.WithPlace(place.NewBlock()))
 
 	n.PT("p1", "t1").PT("p2", "t1").TP("t1", "pout").Run()
 
-	mm := make([]*rtpn.M, b.N)
+	mm := make([]*cpn.M, b.N)
 	for i := 0; i < b.N; i += 1 {
-		mm[i] = rtpn.NewM(i)
+		mm[i] = cpn.NewM(i)
 	}
 
 	b.ResetTimer()
@@ -120,19 +120,19 @@ func BenchmarkPPTP(b *testing.B) {
 }
 
 func BenchmarkPPTTP(b *testing.B) {
-	n := rtpn.NewPN()
-	n.P("p1", rtpn.WithContext(context.Background()), rtpn.WithPlace(place.NewBlock()))
-	n.P("p2", rtpn.WithContext(context.Background()), rtpn.WithPlace(place.NewBlock()))
-	n.T("t1", rtpn.WithFunction(transition.First))
-	n.T("t2", rtpn.WithFunction(transition.First))
-	n.P("pout", rtpn.WithContext(context.Background()), rtpn.WithPlace(place.NewBlock()))
+	n := cpn.NewPN()
+	n.P("p1", cpn.WithContext(context.Background()), cpn.WithPlace(place.NewBlock()))
+	n.P("p2", cpn.WithContext(context.Background()), cpn.WithPlace(place.NewBlock()))
+	n.T("t1", cpn.WithFunction(transition.First))
+	n.T("t2", cpn.WithFunction(transition.First))
+	n.P("pout", cpn.WithContext(context.Background()), cpn.WithPlace(place.NewBlock()))
 
 	n.PT("p1", "t1").PT("p2", "t1").PT("p1", "t2").PT("p2", "t2").
 		TP("t1", "pout").TP("t2", "pout").Run()
 
-	mm := make([]*rtpn.M, b.N)
+	mm := make([]*cpn.M, b.N)
 	for i := 0; i < b.N; i += 1 {
-		mm[i] = rtpn.NewM(i)
+		mm[i] = cpn.NewM(i)
 	}
 
 	b.ResetTimer()

@@ -1,19 +1,19 @@
 package place
 
-import "github.com/alxmsl/rtpn"
+import "github.com/alxmsl/cpn"
 
 type Block struct {
-	ch chan *rtpn.M
+	ch chan *cpn.M
 }
 
 func NewBlock() *Block {
-	return &Block{make(chan *rtpn.M)}
+	return &Block{make(chan *cpn.M)}
 }
 
-func (b Block) In() chan<- *rtpn.M {
+func (b Block) In() chan<- *cpn.M {
 	return b.ch
 }
 
-func (b Block) Out() <-chan *rtpn.M {
+func (b Block) Out() <-chan *cpn.M {
 	return b.ch
 }

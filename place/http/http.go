@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/alxmsl/rtpn"
-	"github.com/alxmsl/rtpn/place"
+	"github.com/alxmsl/cpn"
+	"github.com/alxmsl/cpn/place"
 )
 
 type RequestContext struct {
@@ -33,8 +33,8 @@ func (ctx *RequestContext) Wait() {
 
 type HttpHandler func(ctx *RequestContext)
 
-func HttpProcessor(handler HttpHandler) rtpn.Transition {
-	return func(mm []*rtpn.M) *rtpn.M {
+func HttpProcessor(handler HttpHandler) cpn.Transition {
+	return func(mm []*cpn.M) *cpn.M {
 		m := mm[0]
 		handler(m.Value().(*RequestContext))
 		return m
@@ -80,7 +80,7 @@ func (p *HttpRequest) Run() *HttpRequest {
 			r:    r,
 			w:    w,
 		}
-		p.In() <- rtpn.NewM(ctx)
+		p.In() <- cpn.NewM(ctx)
 		ctx.Wait()
 	})
 	go func() {

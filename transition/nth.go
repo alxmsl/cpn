@@ -1,7 +1,7 @@
 package transition
 
-import "github.com/alxmsl/rtpn"
+import "github.com/alxmsl/cpn"
 
-func First(mm []*rtpn.M) *rtpn.M {
+func First(mm []*cpn.M) *cpn.M {
 	return mm[0]
 }
