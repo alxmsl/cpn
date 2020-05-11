@@ -55,6 +55,7 @@ func (t *T) Run() {
 				return ok
 			})
 			if !ok {
+				t.insunlock()
 				break
 			}
 
