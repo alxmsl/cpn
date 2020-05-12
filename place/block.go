@@ -14,6 +14,8 @@ func (b Block) Close() {
 	close(b.ch)
 }
 
+func (b Block) Run() {}
+
 func (b Block) In() chan<- *cpn.M {
 	return b.ch
 }

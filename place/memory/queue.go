@@ -14,6 +14,8 @@ func (q Queue) Close() {
 	close(q.q)
 }
 
+func (b Queue) Run() {}
+
 func (q Queue) In() chan<- *cpn.M {
 	return q.q
 }

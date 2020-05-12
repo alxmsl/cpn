@@ -1,6 +1,8 @@
 package test
 
 import (
+	"bytes"
+
 	"github.com/alxmsl/cpn/place"
 	. "gopkg.in/check.v1"
 
@@ -79,4 +81,25 @@ func (s *PNSuite) TestPPTTP(c *C) {
 		c.Assert(ok, Equals, true)
 		c.Assert(m.Value().(int), Equals, i)
 	}
+}
+
+func (s *PNSuite) TestPrintNet(c *C) {
+	ctx, cancel := context.WithCancel(context.Background())
+	n := cpn.NewPN()
+	n.P("pin", cpn.WithContext(ctx), cpn.WithPlace(place.NewBlock()))
+	n.T("t1", cpn.WithFunction(transition.First))
+
+	w := bytes.NewBufferString("")
+	n.P("pout", cpn.WithContext(ctx), cpn.WithPlace(place.NewPrint(w)), cpn.IsTermination())
+
+	n.PT("pin", "t1").TP("t1", "pout")
+
+	go func() {
+		for i := 0; i < 10; i += 1 {
+			n.P("pin").In() <- cpn.NewM(i)
+		}
+		cancel()
+	}()
+	n.RunSync()
+	c.Assert(w.String(), Equals, "0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n")
 }

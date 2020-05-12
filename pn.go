@@ -49,6 +49,7 @@ func (pn *PN) TP(t, p string) *PN {
 
 func (pn *PN) Run() {
 	pn.pp.Over(func(i int, n string, v interface{}) bool {
+		go v.(*P).startPlace()
 		go v.(*P).startRecv()
 		go v.(*P).startSend()
 		return true
@@ -62,7 +63,11 @@ func (pn *PN) Run() {
 func (pn *PN) RunSync() {
 	wg := sync.WaitGroup{}
 	pn.pp.Over(func(i int, n string, v interface{}) bool {
-		wg.Add(2)
+		wg.Add(3)
+		go func() {
+			defer wg.Done()
+			v.(*P).startPlace()
+		}()
 		go func() {
 			defer wg.Done()
 			v.(*P).startRecv()

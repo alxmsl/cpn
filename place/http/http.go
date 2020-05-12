@@ -49,13 +49,10 @@ func NewHttpResponse() *HttpResponse {
 	return &HttpResponse{place.NewBlock()}
 }
 
-func (p *HttpResponse) Run() *HttpResponse {
-	go func() {
-		for m := range p.Out() {
-			m.Value().(*RequestContext).Flush()
-		}
-	}()
-	return p
+func (p *HttpResponse) Run() {
+	for m := range p.Out() {
+		m.Value().(*RequestContext).Flush()
+	}
 }
 
 type HttpRequest struct {
@@ -73,7 +70,7 @@ func NewHttpRequest(addr, pattern string, cancel context.CancelFunc) *HttpReques
 	}
 }
 
-func (p *HttpRequest) Run() *HttpRequest {
+func (p *HttpRequest) Run() {
 	http.HandleFunc(p.pattern, func(w http.ResponseWriter, r *http.Request) {
 		ctx := &RequestContext{
 			done: make(chan struct{}),
@@ -83,11 +80,8 @@ func (p *HttpRequest) Run() *HttpRequest {
 		p.In() <- cpn.NewM(ctx)
 		ctx.Wait()
 	})
-	go func() {
-		if err := http.ListenAndServe(p.addr, nil); err != http.ErrServerClosed {
-			p.cancel()
-			return
-		}
-	}()
-	return p
+	if err := http.ListenAndServe(p.addr, nil); err != http.ErrServerClosed {
+		p.cancel()
+		return
+	}
 }

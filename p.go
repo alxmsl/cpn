@@ -10,6 +10,7 @@ type Place interface {
 	In() chan<- *M
 	Out() <-chan *M
 	Close()
+	Run()
 }
 
 const (
@@ -74,6 +75,10 @@ func (p *P) Read() (*M, bool) {
 func (p *P) ready() bool {
 	s := atomic.LoadInt64(&p.s)
 	return s&(stateReady|stateClosed) > 0x0
+}
+
+func (p *P) startPlace() {
+	p.place.Run()
 }
 
 func (p *P) startRecv() {
