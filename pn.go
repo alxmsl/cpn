@@ -1,6 +1,10 @@
 package cpn
 
-import "github.com/alxmsl/prmtvs/skm"
+import (
+	"sync"
+
+	"github.com/alxmsl/prmtvs/skm"
+)
 
 type PN struct {
 	pp *skm.SKM
@@ -45,13 +49,39 @@ func (pn *PN) TP(t, p string) *PN {
 
 func (pn *PN) Run() {
 	pn.pp.Over(func(i int, n string, v interface{}) bool {
-		v.(*P).Run()
+		go v.(*P).startRecv()
+		go v.(*P).startSend()
 		return true
 	})
 	pn.tt.Over(func(i int, n string, v interface{}) bool {
-		v.(*T).Run()
+		go v.(*T).run()
 		return true
 	})
+}
+
+func (pn *PN) RunSync() {
+	wg := sync.WaitGroup{}
+	pn.pp.Over(func(i int, n string, v interface{}) bool {
+		wg.Add(2)
+		go func() {
+			defer wg.Done()
+			v.(*P).startRecv()
+		}()
+		go func() {
+			defer wg.Done()
+			v.(*P).startSend()
+		}()
+		return true
+	})
+	pn.tt.Over(func(i int, n string, v interface{}) bool {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			v.(*T).run()
+		}()
+		return true
+	})
+	wg.Wait()
 }
 
 func (pn *PN) Size() (int, int) {
