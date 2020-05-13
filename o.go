@@ -2,70 +2,74 @@ package cpn
 
 import "context"
 
-type PlaceOption interface {
+type POpt interface {
 	Apply(*P)
 }
 
-func WithContext(ctx context.Context) PlaceOption {
-	return contextOption{ctx}
+func WithContext(ctx context.Context) POpt {
+	return contextOpt{ctx}
 }
 
-type contextOption struct {
+type contextOpt struct {
 	ctx context.Context
 }
 
-func (o contextOption) Apply(p *P) {
+func (o contextOpt) Apply(p *P) {
 	p.ctx = o.ctx
 }
 
-func WithPlace(place Place) PlaceOption {
-	return placeOption{place}
+func WithPlace(place Place) POpt {
+	return placeOpt{place}
 }
 
-type placeOption struct {
+type placeOpt struct {
 	place Place
 }
 
-func (o placeOption) Apply(p *P) {
+func (o placeOpt) Apply(p *P) {
 	p.place = o.place
 }
 
-type PlaceBuilder func() Place
-
-func WithPlaceBuilder(builder PlaceBuilder) PlaceOption {
-	return placeBuilderOption{builder}
+type PlaceBuilder func(opts ...PlaceOption) Place
+type PlaceOption interface {
+	Apply(Place)
 }
 
-type placeBuilderOption struct {
+func WithPlaceBuilder(builder PlaceBuilder, opts ...PlaceOption) POpt {
+	return placeBuilderOpt{builder, opts}
+}
+
+type placeBuilderOpt struct {
 	builder PlaceBuilder
+	opts    []PlaceOption
 }
 
-func (o placeBuilderOption) Apply(p *P) {
-	p.place = o.builder()
+func (o placeBuilderOpt) Apply(p *P) {
+	p.place = o.builder(o.opts...)
 }
 
-func IsTermination() PlaceOption {
-	return terminationOption{}
+func IsTermination() POpt {
+	return terminationOpt{}
 }
 
-type terminationOption struct{}
+type terminationOpt struct{}
 
-func (o terminationOption) Apply(p *P) {
+func (o terminationOpt) Apply(p *P) {
 	p.t = true
 }
 
-type TransitionOption interface {
+type TOpt interface {
 	Apply(*T)
 }
 
-func WithFunction(fn Transition) TransitionOption {
-	return transitionOption{fn}
+func WithFunction(fn Transition) TOpt {
+	return transitionOpt{fn}
 }
 
-type transitionOption struct {
+type transitionOpt struct {
 	fn Transition
 }
 
-func (o transitionOption) Apply(t *T) {
+func (o transitionOpt) Apply(t *T) {
 	t.fn = o.fn
 }

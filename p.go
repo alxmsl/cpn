@@ -44,7 +44,7 @@ func NewP(name string) *P {
 	return p
 }
 
-func (p *P) SetOptions(opts ...PlaceOption) *P {
+func (p *P) SetOptions(opts ...POpt) *P {
 	for _, opt := range opts {
 		opt.Apply(p)
 	}

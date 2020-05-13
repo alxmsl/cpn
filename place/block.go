@@ -6,7 +6,7 @@ type Block struct {
 	ch chan *cpn.M
 }
 
-func NewBlock() cpn.Place {
+func NewBlock(_ ...cpn.PlaceOption) cpn.Place {
 	return &Block{make(chan *cpn.M)}
 }
 

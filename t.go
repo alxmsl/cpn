@@ -27,7 +27,7 @@ func NewT(name string) *T {
 	return t
 }
 
-func (t *T) SetOptions(opts ...TransitionOption) *T {
+func (t *T) SetOptions(opts ...TOpt) *T {
 	for _, opt := range opts {
 		opt.Apply(t)
 	}

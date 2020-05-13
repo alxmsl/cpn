@@ -90,7 +90,7 @@ func (s *PNSuite) TestPrintNet(c *C) {
 	n.T("t1", cpn.WithFunction(transition.First))
 
 	w := bytes.NewBufferString("")
-	n.P("pout", cpn.WithContext(ctx), cpn.WithPlace(place.NewPrint(w)), cpn.IsTermination())
+	n.P("pout", cpn.WithContext(ctx), cpn.WithPlace(place.NewPrint(place.WriterOption(w))), cpn.IsTermination())
 
 	n.PT("pin", "t1").TP("t1", "pout")
 

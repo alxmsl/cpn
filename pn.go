@@ -20,7 +20,7 @@ func NewPN() *PN {
 	return pn
 }
 
-func (pn *PN) P(name string, opts ...PlaceOption) *P {
+func (pn *PN) P(name string, opts ...POpt) *P {
 	if v, ok := pn.pp.GetByKey(name); ok {
 		return v.(*P)
 	}
@@ -29,7 +29,7 @@ func (pn *PN) P(name string, opts ...PlaceOption) *P {
 	return p
 }
 
-func (pn *PN) Pn(n int, prefix string, opts ...PlaceOption) {
+func (pn *PN) Pn(n int, prefix string, opts ...POpt) {
 	for i := 0; i < n; i += 1 {
 		name := fmt.Sprintf("%s%d", prefix, i)
 		pn.P(name, opts...)
@@ -49,7 +49,7 @@ func (pn *PN) PTn(n int, p, prefix string) *PN {
 	return pn
 }
 
-func (pn *PN) T(name string, opts ...TransitionOption) *T {
+func (pn *PN) T(name string, opts ...TOpt) *T {
 	if v, ok := pn.tt.GetByKey(name); ok {
 		return v.(*T)
 	}
@@ -58,7 +58,7 @@ func (pn *PN) T(name string, opts ...TransitionOption) *T {
 	return t
 }
 
-func (pn *PN) Tn(n int, prefix string, opts ...TransitionOption) {
+func (pn *PN) Tn(n int, prefix string, opts ...TOpt) {
 	for i := 0; i < n; i += 1 {
 		name := fmt.Sprintf("%s%d", prefix, i)
 		pn.T(name, opts...)
