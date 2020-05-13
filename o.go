@@ -30,6 +30,20 @@ func (o placeOption) Apply(p *P) {
 	p.place = o.place
 }
 
+type PlaceBuilder func() Place
+
+func WithPlaceBuilder(builder PlaceBuilder) PlaceOption {
+	return placeBuilderOption{builder}
+}
+
+type placeBuilderOption struct {
+	builder PlaceBuilder
+}
+
+func (o placeBuilderOption) Apply(p *P) {
+	p.place = o.builder()
+}
+
 func IsTermination() PlaceOption {
 	return terminationOption{}
 }

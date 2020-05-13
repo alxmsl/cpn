@@ -42,7 +42,7 @@ func HttpProcessor(handler HttpHandler) cpn.Transition {
 }
 
 type HttpResponse struct {
-	*place.Block
+	cpn.Place
 }
 
 func NewHttpResponse() *HttpResponse {
@@ -56,7 +56,7 @@ func (p *HttpResponse) Run() {
 }
 
 type HttpRequest struct {
-	*place.Block
+	cpn.Place
 
 	addr, pattern string
 	cancel        context.CancelFunc

@@ -3,10 +3,13 @@ package place
 import (
 	"fmt"
 	"io"
+
+	"github.com/alxmsl/cpn"
 )
 
 type Print struct {
-	*Block
+	cpn.Place
+
 	w io.Writer
 }
 

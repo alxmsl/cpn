@@ -1,6 +1,7 @@
 package cpn
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/alxmsl/prmtvs/skm"
@@ -28,8 +29,23 @@ func (pn *PN) P(name string, opts ...PlaceOption) *P {
 	return p
 }
 
+func (pn *PN) Pn(n int, prefix string, opts ...PlaceOption) {
+	for i := 0; i < n; i += 1 {
+		name := fmt.Sprintf("%s%d", prefix, i)
+		pn.P(name, opts...)
+	}
+}
+
 func (pn *PN) PT(p, t string) *PN {
 	pn.T(t).ins.Add(pn.P(p).Name(), pn.P(p))
+	return pn
+}
+
+func (pn *PN) PTn(n int, p, prefix string) *PN {
+	for i := 0; i < n; i += 1 {
+		t := fmt.Sprintf("%s%d", prefix, i)
+		pn.PT(p, t)
+	}
 	return pn
 }
 
@@ -42,8 +58,24 @@ func (pn *PN) T(name string, opts ...TransitionOption) *T {
 	return t
 }
 
+func (pn *PN) Tn(n int, prefix string, opts ...TransitionOption) {
+	for i := 0; i < n; i += 1 {
+		name := fmt.Sprintf("%s%d", prefix, i)
+		pn.T(name, opts...)
+	}
+}
+
 func (pn *PN) TP(t, p string) *PN {
 	pn.T(t).outs.Add(pn.P(p).Name(), pn.P(p))
+	return pn
+}
+
+func (pn *PN) TnPn(n int, prefixt, prefixp string) *PN {
+	for i := 0; i < n; i += 1 {
+		t := fmt.Sprintf("%s%d", prefixt, i)
+		p := fmt.Sprintf("%s%d", prefixp, i)
+		pn.TP(t, p)
+	}
 	return pn
 }
 

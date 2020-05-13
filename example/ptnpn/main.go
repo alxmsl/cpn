@@ -16,13 +16,9 @@ func main() {
 
 	n := cpn.NewPN()
 	n.P("pin", cpn.WithContext(ctx), cpn.WithPlace(place.NewBlock()))
-	for i := 0; i < places; i += 1 {
-		nt := fmt.Sprintf("t%d", i)
-		n.T(nt, cpn.WithFunction(transition.First))
-		np := fmt.Sprintf("p%d", i)
-		n.P(np, cpn.WithContext(ctx), cpn.WithPlace(place.NewBlock()), cpn.IsTermination())
-		n.PT("pin", nt).TP(nt, np)
-	}
+	n.Tn(places, "t_", cpn.WithFunction(transition.First))
+	n.Pn(places, "p_", cpn.WithContext(ctx), cpn.WithPlaceBuilder(place.NewBlock), cpn.IsTermination())
+	n.PTn(places, "pin", "t_").TnPn(places, "t_", "p_")
 
 	go func() {
 		for i := 0; i < 10; i += 1 {
@@ -32,7 +28,7 @@ func main() {
 	}()
 	for i := 0; i < places; i += 1 {
 		go func(i int) {
-			for m := range n.P(fmt.Sprintf("p%d", i)).Out() {
+			for m := range n.P(fmt.Sprintf("p_%d", i)).Out() {
 				fmt.Println(m)
 			}
 		}(i)
