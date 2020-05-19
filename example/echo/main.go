@@ -22,7 +22,7 @@ func main() {
 	n.P("res",
 		cpn.WithContext(ctx),
 		cpn.WithPlace(http.NewHttpResponse()),
-		cpn.IsTermination(),
+		cpn.IsFinal(),
 	)
 
 	n.PT("req", "echo").TP("echo", "res").Run()

@@ -90,14 +90,24 @@ func (t *T) run() {
 		m.word = append(m.word, t.Name())
 
 		t.outs.Over(func(i int, n string, v interface{}) bool {
-			v.(*P).in <- m
+			p := v.(*P)
+			p.lock.Lock()
+			defer p.lock.Unlock()
+			p.in <- m
 			return true
 		})
-
 	}
 
 	t.outs.Over(func(i int, n string, v interface{}) bool {
-		close(v.(*P).in)
+		p := v.(*P)
+		p.lock.Lock()
+		defer p.lock.Unlock()
+		defer func() {
+			if err := recover(); err != nil && err.(error).Error() != "close of closed channel" {
+				panic(err)
+			}
+		}()
+		close(p.in)
 		return true
 	})
 }
