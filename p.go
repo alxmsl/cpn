@@ -31,6 +31,7 @@ type P struct {
 	// Storage implementation
 	place Place
 	s     int64
+	i     bool
 	t     bool
 }
 
@@ -66,12 +67,6 @@ func (p *P) Out() <-chan *M {
 	return p.place.Out()
 }
 
-func (p *P) Read() (*M, bool) {
-	p.lock.Lock()
-	m, ok := <-p.out
-	return m, ok
-}
-
 func (p *P) ready() bool {
 	s := atomic.LoadInt64(&p.s)
 	return s&(stateReady|stateClosed) > 0x0
@@ -83,7 +78,11 @@ func (p *P) startPlace() {
 
 func (p *P) startRecv() {
 	atomic.AddInt64(&p.s, stateActive)
+	if p.i {
+		return
+	}
 	for m := range p.in {
+		m.path = append(m.path, p.Name())
 		p.place.In() <- m
 	}
 	if p.t {
@@ -105,7 +104,9 @@ func (p *P) startSend() {
 			}
 			atomic.AddInt64(&p.s, stateReady)
 
-			m.path = append(m.path, p.Name())
+			if len(m.path) == 0 || m.path[len(m.path)-1] != p.Name() {
+				m.path = append(m.path, p.Name())
+			}
 			p.out <- m
 
 			atomic.AddInt64(&p.s, -stateReady)
@@ -114,7 +115,5 @@ func (p *P) startSend() {
 			atomic.AddInt64(&p.s, stateClosed)
 		}
 	}
-	close(p.in)
-	p.place.Close()
 	close(p.out)
 }

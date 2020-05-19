@@ -48,14 +48,24 @@ func (o placeBuilderOpt) Apply(p *P) {
 	p.place = o.builder(o.opts...)
 }
 
-func IsTermination() POpt {
-	return terminationOpt{}
+func IsFinal() POpt {
+	return finalOpt{}
 }
 
-type terminationOpt struct{}
+type finalOpt struct{}
 
-func (o terminationOpt) Apply(p *P) {
+func (o finalOpt) Apply(p *P) {
 	p.t = true
+}
+
+func IsInitial() POpt {
+	return initialOpt{}
+}
+
+type initialOpt struct{}
+
+func (o initialOpt) Apply(p *P) {
+	p.i = true
 }
 
 type TOpt interface {

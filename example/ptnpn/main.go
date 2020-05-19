@@ -15,9 +15,9 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	n := cpn.NewPN()
-	n.P("pin", cpn.WithContext(ctx), cpn.WithPlace(place.NewBlock()))
+	n.P("pin", cpn.WithContext(ctx), cpn.WithPlace(place.NewBlock()), cpn.IsInitial())
 	n.Tn(places, "t_", cpn.WithFunction(transition.First))
-	n.Pn(places, "p_", cpn.WithContext(ctx), cpn.WithPlaceBuilder(place.NewBlock), cpn.IsTermination())
+	n.Pn(places, "p_", cpn.WithContext(ctx), cpn.WithPlaceBuilder(place.NewBlock), cpn.IsFinal())
 	n.PTn(places, "pin", "t_").TnPn(places, "t_", "p_")
 
 	go func() {

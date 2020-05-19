@@ -12,9 +12,9 @@ import (
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	n := cpn.NewPN()
-	n.P("pin", cpn.WithContext(ctx), cpn.WithPlace(place.NewBlock()))
+	n.P("pin", cpn.WithContext(ctx), cpn.WithPlace(place.NewBlock()), cpn.IsInitial())
 	n.T("t1", cpn.WithFunction(transition.First))
-	n.P("pout", cpn.WithContext(ctx), cpn.WithPlace(place.NewBlock()), cpn.IsTermination())
+	n.P("pout", cpn.WithContext(ctx), cpn.WithPlace(place.NewBlock()), cpn.IsFinal())
 
 	n.PT("pin", "t1").TP("t1", "pout").Run()
 
