@@ -9,7 +9,6 @@ import (
 type Place interface {
 	In() chan<- *M
 	Out() <-chan *M
-	Close()
 	Run()
 }
 
@@ -85,8 +84,8 @@ func (p *P) startRecv() {
 		m.path = append(m.path, p.Name())
 		p.place.In() <- m
 	}
+	close(p.place.In())
 	if p.t {
-		p.place.Close()
 		close(p.out)
 	}
 }
