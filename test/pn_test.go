@@ -48,6 +48,35 @@ func (s *PNSuite) TestPTP(c *C) {
 	}
 }
 
+func (s *PNSuite) TestPTTP(c *C) {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	n := cpn.NewPN()
+	n.P("pin", cpn.WithContext(ctx), cpn.WithPlace(place.NewBlock()), cpn.IsInitial())
+	n.T("t1", cpn.WithFunction(transition.First))
+	n.T("t2", cpn.WithFunction(transition.First))
+	n.P("pout", cpn.WithContext(ctx), cpn.WithPlace(place.NewBlock()), cpn.IsFinal())
+
+	n.PT("pin", "t1").PT("pin", "t2").TP("t1", "pout").TP("t2", "pout").Run()
+
+	go func() {
+		for i := 0; i < 1000; i += 1 {
+			n.P("pin").In() <- cpn.NewM(i)
+		}
+		cancel()
+	}()
+
+	count := 0
+	for m := range n.P("pout").Out() {
+		c.Assert(m.Path(), HasLen, 3)
+		c.Assert(m.Path()[0], Equals, "pin")
+		c.Assert(m.Path()[1] == "t1" || m.Path()[1] == "t2", Equals, true)
+		c.Assert(m.Path()[2], Equals, "pout")
+		count += 1
+	}
+	c.Assert(count, Equals, 1000)
+}
+
 func (s *PNSuite) TestPPTP(c *C) {
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -99,12 +128,15 @@ func (s *PNSuite) TestPPTTP(c *C) {
 		cancel()
 	}()
 
+	count := 0
 	for m := range n.P("pout").Out() {
 		c.Assert(m.Path(), HasLen, 3)
 		c.Assert(m.Path()[0] == "p1" || m.Path()[0] == "p2", Equals, true)
 		c.Assert(m.Path()[1] == "t1" || m.Path()[1] == "t2", Equals, true)
 		c.Assert(m.Path()[2], Equals, "pout")
+		count += 1
 	}
+	c.Assert(count, Equals, 1000)
 }
 
 func (s *PNSuite) TestPrintNet(c *C) {

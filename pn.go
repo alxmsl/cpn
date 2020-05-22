@@ -66,6 +66,7 @@ func (pn *PN) Tn(n int, prefix string, opts ...TOpt) {
 }
 
 func (pn *PN) TP(t, p string) *PN {
+	pn.P(p).ins.Add(pn.T(t).Name(), make(chan *M))
 	pn.T(t).outs.Add(pn.P(p).Name(), pn.P(p))
 	return pn
 }

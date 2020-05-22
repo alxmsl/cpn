@@ -14,9 +14,10 @@ func main() {
 	n := cpn.NewPN()
 	n.P("pin", cpn.WithContext(ctx), cpn.WithPlace(place.NewBlock()), cpn.IsInitial())
 	n.T("t1", cpn.WithFunction(transition.First))
+	n.T("t2", cpn.WithFunction(transition.First))
 	n.P("pout", cpn.WithContext(ctx), cpn.WithPlace(place.NewBlock()), cpn.IsFinal())
 
-	n.PT("pin", "t1").TP("t1", "pout").Run()
+	n.PT("pin", "t1").PT("pin", "t2").TP("t1", "pout").TP("t2", "pout").Run()
 
 	go func() {
 		for i := 0; i < 10; i += 1 {

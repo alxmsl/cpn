@@ -4,6 +4,8 @@ import (
 	"context"
 	"sync"
 	"sync/atomic"
+
+	"github.com/alxmsl/prmtvs/skm"
 )
 
 type Place interface {
@@ -24,7 +26,7 @@ type P struct {
 	ctx context.Context
 	n   string
 
-	in  chan *M
+	ins *skm.SKM
 	out chan *M
 
 	// Storage implementation
@@ -38,7 +40,7 @@ func NewP(name string) *P {
 	p := &P{
 		n: name,
 
-		in:  make(chan *M),
+		ins: skm.NewSKM(),
 		out: make(chan *M),
 	}
 	return p
@@ -80,10 +82,21 @@ func (p *P) startRecv() {
 	if p.i {
 		return
 	}
-	for m := range p.in {
-		m.path = append(m.path, p.Name())
-		p.place.In() <- m
-	}
+
+	wg := &sync.WaitGroup{}
+	wg.Add(p.ins.Len())
+	p.ins.Over(func(i int, n string, v interface{}) bool {
+		go func() {
+			defer wg.Done()
+			for m := range v.(chan *M) {
+				m.path = append(m.path, p.Name())
+				p.place.In() <- m
+			}
+		}()
+		return true
+	})
+	wg.Wait()
+
 	close(p.place.In())
 	if p.t {
 		close(p.out)
