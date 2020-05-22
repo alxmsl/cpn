@@ -10,10 +10,6 @@ func NewBlock(_ ...cpn.PlaceOption) cpn.Place {
 	return &Block{make(chan *cpn.M)}
 }
 
-func (b Block) Close() {
-	close(b.ch)
-}
-
 func (b Block) Run() {}
 
 func (b Block) In() chan<- *cpn.M {
