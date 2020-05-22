@@ -13,6 +13,7 @@ func main() {
 	n.P("req",
 		cpn.WithContext(ctx),
 		cpn.WithPlace(http.NewHttpRequest("127.0.0.1:8080", "/", cancel)),
+		cpn.IsInitial(),
 	)
 	n.T("echo",
 		cpn.WithFunction(http.HttpProcessor(func(ctx *http.RequestContext) {
