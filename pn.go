@@ -49,6 +49,23 @@ func (pn *PN) PTn(n int, p, prefix string) *PN {
 	return pn
 }
 
+func (pn *PN) PnTn(n int, prefixp, prefixt string) *PN {
+	for i := 0; i < n; i += 1 {
+		p := fmt.Sprintf("%s%d", prefixp, i)
+		t := fmt.Sprintf("%s%d", prefixt, i)
+		pn.PT(p, t)
+	}
+	return pn
+}
+
+func (pn *PN) PnT(n int, prefixp, t string) *PN {
+	for i := 0; i < n; i += 1 {
+		p := fmt.Sprintf("%s%d", prefixp, i)
+		pn.PT(p, t)
+	}
+	return pn
+}
+
 func (pn *PN) T(name string, opts ...TOpt) *T {
 	if v, ok := pn.tt.GetByKey(name); ok {
 		return v.(*T)
@@ -71,10 +88,26 @@ func (pn *PN) TP(t, p string) *PN {
 	return pn
 }
 
+func (pn *PN) TPn(n int, t, prefixp string) *PN {
+	for i := 0; i < n; i += 1 {
+		p := fmt.Sprintf("%s%d", prefixp, i)
+		pn.TP(t, p)
+	}
+	return pn
+}
+
 func (pn *PN) TnPn(n int, prefixt, prefixp string) *PN {
 	for i := 0; i < n; i += 1 {
 		t := fmt.Sprintf("%s%d", prefixt, i)
 		p := fmt.Sprintf("%s%d", prefixp, i)
+		pn.TP(t, p)
+	}
+	return pn
+}
+
+func (pn *PN) TnP(n int, prefixt, p string) *PN {
+	for i := 0; i < n; i += 1 {
+		t := fmt.Sprintf("%s%d", prefixt, i)
 		pn.TP(t, p)
 	}
 	return pn
