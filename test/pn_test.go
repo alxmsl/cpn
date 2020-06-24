@@ -43,9 +43,16 @@ func (s *PNSuite) TestPTP(c *C) {
 	for m := range n.P("pout").Out() {
 		c.Assert(m.Value().(int), Equals, i)
 		c.Assert(m.Path(), HasLen, 3)
-		c.Assert(m.Path()[0], Equals, "pin")
-		c.Assert(m.Path()[1], Equals, "t1")
-		c.Assert(m.Path()[2], Equals, "pout")
+		c.Assert(m.Path()[0].N, Equals, "pin")
+		c.Assert(m.Path()[1].N, Equals, "t1")
+		c.Assert(m.Path()[2].N, Equals, "pout")
+
+		c.Assert(m.History(), HasLen, 4)
+		c.Assert(m.History()[0].N, Equals, "")
+		c.Assert(m.History()[1], Equals, m.Path()[0])
+		c.Assert(m.History()[2], Equals, m.Path()[1])
+		c.Assert(m.History()[3], Equals, m.Path()[2])
+
 		i += 1
 	}
 }
@@ -71,9 +78,16 @@ func (s *PNSuite) TestPTTP(c *C) {
 	count := 0
 	for m := range n.P("pout").Out() {
 		c.Assert(m.Path(), HasLen, 3)
-		c.Assert(m.Path()[0], Equals, "pin")
-		c.Assert(m.Path()[1] == "t1" || m.Path()[1] == "t2", Equals, true)
-		c.Assert(m.Path()[2], Equals, "pout")
+		c.Assert(m.Path()[0].N, Equals, "pin")
+		c.Assert(m.Path()[1].N == "t1" || m.Path()[1].N == "t2", Equals, true)
+		c.Assert(m.Path()[2].N, Equals, "pout")
+
+		c.Assert(m.History(), HasLen, 4)
+		c.Assert(m.History()[0].N, Equals, "")
+		c.Assert(m.History()[1], Equals, m.Path()[0])
+		c.Assert(m.History()[2], Equals, m.Path()[1])
+		c.Assert(m.History()[3], Equals, m.Path()[2])
+
 		count += 1
 	}
 	c.Assert(count, Equals, 1000)
@@ -143,9 +157,16 @@ func (s *PNSuite) TestPPTP(c *C) {
 	for m := range n.P("pout").Out() {
 		c.Assert(m.Value().(int), Equals, i)
 		c.Assert(m.Path(), HasLen, 3)
-		c.Assert(m.Path()[0] == "p1" || m.Path()[0] == "p2", Equals, true)
-		c.Assert(m.Path()[1], Equals, "t1")
-		c.Assert(m.Path()[2], Equals, "pout")
+		c.Assert(m.Path()[0].N == "p1" || m.Path()[0].N == "p2", Equals, true)
+		c.Assert(m.Path()[1].N, Equals, "t1")
+		c.Assert(m.Path()[2].N, Equals, "pout")
+
+		c.Assert(m.History(), HasLen, 4)
+		c.Assert(m.History()[0].N, Equals, "")
+		c.Assert(m.History()[1], Equals, m.Path()[0])
+		c.Assert(m.History()[2], Equals, m.Path()[1])
+		c.Assert(m.History()[3], Equals, m.Path()[2])
+
 		i += 1
 	}
 }
@@ -174,9 +195,16 @@ func (s *PNSuite) TestPPTTP(c *C) {
 	count := 0
 	for m := range n.P("pout").Out() {
 		c.Assert(m.Path(), HasLen, 3)
-		c.Assert(m.Path()[0] == "p1" || m.Path()[0] == "p2", Equals, true)
-		c.Assert(m.Path()[1] == "t1" || m.Path()[1] == "t2", Equals, true)
-		c.Assert(m.Path()[2], Equals, "pout")
+		c.Assert(m.Path()[0].N == "p1" || m.Path()[0].N == "p2", Equals, true)
+		c.Assert(m.Path()[1].N == "t1" || m.Path()[1].N == "t2", Equals, true)
+		c.Assert(m.Path()[2].N, Equals, "pout")
+
+		c.Assert(m.History(), HasLen, 4)
+		c.Assert(m.History()[0].N, Equals, "")
+		c.Assert(m.History()[1], Equals, m.Path()[0])
+		c.Assert(m.History()[2], Equals, m.Path()[1])
+		c.Assert(m.History()[3], Equals, m.Path()[2])
+
 		count += 1
 	}
 	c.Assert(count, Equals, 1000)
