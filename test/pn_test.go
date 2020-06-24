@@ -5,6 +5,8 @@ import (
 
 	"bytes"
 	"context"
+	"sync"
+	"sync/atomic"
 	"testing"
 
 	"github.com/alxmsl/cpn"
@@ -75,6 +77,47 @@ func (s *PNSuite) TestPTTP(c *C) {
 		count += 1
 	}
 	c.Assert(count, Equals, 1000)
+}
+
+func (s *PNSuite) TestPTPP(c *C) {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	n := cpn.NewPN()
+	n.P("pin", cpn.WithContext(ctx), cpn.WithPlace(place.NewBlock()), cpn.IsInitial())
+	n.T("t", cpn.WithFunction(transition.First))
+	n.P("pout1", cpn.WithContext(ctx), cpn.WithPlace(place.NewBlock()), cpn.IsFinal())
+	n.P("pout2", cpn.WithContext(ctx), cpn.WithPlace(place.NewBlock()), cpn.IsFinal())
+
+	n.
+		PT("pin", "t").
+		TP("t", "pout1").
+		TP("t", "pout2").
+		Run()
+
+	go func() {
+		for i := 0; i < 1000; i += 1 {
+			n.P("pin").In() <- cpn.NewM(i)
+		}
+		cancel()
+	}()
+
+	var count int64
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		for range n.P("pout1").Out() {
+			atomic.AddInt64(&count, 1)
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		for range n.P("pout2").Out() {
+			atomic.AddInt64(&count, 1)
+		}
+	}()
+	wg.Wait()
+	c.Assert(count, Equals, int64(2000))
 }
 
 func (s *PNSuite) TestPPTP(c *C) {

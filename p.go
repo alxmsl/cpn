@@ -89,7 +89,7 @@ func (p *P) startRecv() {
 		go func() {
 			defer wg.Done()
 			for m := range v.(chan *M) {
-				m.path = append(m.path, p.Name())
+				m.PassP(p.Name())
 				p.place.In() <- m
 			}
 		}()
@@ -116,9 +116,7 @@ func (p *P) startSend() {
 			}
 			atomic.AddInt64(&p.s, stateReady)
 
-			if len(m.path) == 0 || m.path[len(m.path)-1] != p.Name() {
-				m.path = append(m.path, p.Name())
-			}
+			m.PassP(p.Name())
 			p.out <- m
 
 			atomic.AddInt64(&p.s, -stateReady)
