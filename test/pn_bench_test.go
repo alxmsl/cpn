@@ -93,6 +93,31 @@ func BenchmarkQueuePTP(b *testing.B) {
 	}
 }
 
+func BenchmarkPTPP(b *testing.B) {
+	n := cpn.NewPN()
+	n.P("pin", cpn.WithContext(context.Background()), cpn.WithPlace(place.NewBlock()), cpn.IsInitial())
+	n.T("t", cpn.WithFunction(transition.First))
+	n.P("pout1", cpn.WithContext(context.Background()), cpn.WithPlace(place.NewBlock()), cpn.IsFinal())
+	n.P("pout2", cpn.WithContext(context.Background()), cpn.WithPlace(place.NewBlock()), cpn.IsFinal())
+
+	mm := make([]*cpn.M, b.N)
+	for i := 0; i < b.N; i += 1 {
+		mm[i] = cpn.NewM(i)
+	}
+
+	n.
+		PT("pin", "t").
+		TP("t", "pout1").
+		TP("t", "pout2").
+		Run()
+	b.ResetTimer()
+	for i := 0; i < b.N; i += 1 {
+		n.P("pin").In() <- mm[i]
+		<-n.P("pout1").Out()
+		<-n.P("pout2").Out()
+	}
+}
+
 func BenchmarkPPTP(b *testing.B) {
 	n := cpn.NewPN()
 	n.P("p1", cpn.WithContext(context.Background()), cpn.WithPlace(place.NewBlock()), cpn.IsInitial())
