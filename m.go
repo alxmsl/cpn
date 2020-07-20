@@ -33,7 +33,7 @@ func NewM(value interface{}) *M {
 func (m *M) History() []*E {
 	m.lock.RLock()
 	defer m.lock.RUnlock()
-	return append([]*E{&E{m.c, ""}}, m.path...)
+	return append([]*E{{m.c, ""}}, m.path...)
 }
 
 func (m *M) PassP(n string) {

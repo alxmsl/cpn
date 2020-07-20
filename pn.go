@@ -7,6 +7,8 @@ import (
 	"github.com/alxmsl/prmtvs/skm"
 )
 
+const formatName = "%s:%d"
+
 type PN struct {
 	pp *skm.SKM
 	tt *skm.SKM
@@ -31,7 +33,7 @@ func (pn *PN) P(name string, opts ...POpt) *P {
 
 func (pn *PN) Pn(n int, prefix string, opts ...POpt) {
 	for i := 0; i < n; i += 1 {
-		name := fmt.Sprintf("%s%d", prefix, i)
+		name := fmt.Sprintf(formatName, prefix, i)
 		pn.P(name, opts...)
 	}
 }
@@ -43,7 +45,7 @@ func (pn *PN) PT(p, t string) *PN {
 
 func (pn *PN) PTn(n int, p, prefix string) *PN {
 	for i := 0; i < n; i += 1 {
-		t := fmt.Sprintf("%s%d", prefix, i)
+		t := fmt.Sprintf(formatName, prefix, i)
 		pn.PT(p, t)
 	}
 	return pn
@@ -51,8 +53,8 @@ func (pn *PN) PTn(n int, p, prefix string) *PN {
 
 func (pn *PN) PnTn(n int, prefixp, prefixt string) *PN {
 	for i := 0; i < n; i += 1 {
-		p := fmt.Sprintf("%s%d", prefixp, i)
-		t := fmt.Sprintf("%s%d", prefixt, i)
+		p := fmt.Sprintf(formatName, prefixp, i)
+		t := fmt.Sprintf(formatName, prefixt, i)
 		pn.PT(p, t)
 	}
 	return pn
@@ -60,7 +62,7 @@ func (pn *PN) PnTn(n int, prefixp, prefixt string) *PN {
 
 func (pn *PN) PnT(n int, prefixp, t string) *PN {
 	for i := 0; i < n; i += 1 {
-		p := fmt.Sprintf("%s%d", prefixp, i)
+		p := fmt.Sprintf(formatName, prefixp, i)
 		pn.PT(p, t)
 	}
 	return pn
@@ -77,7 +79,7 @@ func (pn *PN) T(name string, opts ...TOpt) *T {
 
 func (pn *PN) Tn(n int, prefix string, opts ...TOpt) {
 	for i := 0; i < n; i += 1 {
-		name := fmt.Sprintf("%s%d", prefix, i)
+		name := fmt.Sprintf(formatName, prefix, i)
 		pn.T(name, opts...)
 	}
 }
@@ -90,7 +92,7 @@ func (pn *PN) TP(t, p string) *PN {
 
 func (pn *PN) TPn(n int, t, prefixp string) *PN {
 	for i := 0; i < n; i += 1 {
-		p := fmt.Sprintf("%s%d", prefixp, i)
+		p := fmt.Sprintf(formatName, prefixp, i)
 		pn.TP(t, p)
 	}
 	return pn
@@ -98,8 +100,8 @@ func (pn *PN) TPn(n int, t, prefixp string) *PN {
 
 func (pn *PN) TnPn(n int, prefixt, prefixp string) *PN {
 	for i := 0; i < n; i += 1 {
-		t := fmt.Sprintf("%s%d", prefixt, i)
-		p := fmt.Sprintf("%s%d", prefixp, i)
+		t := fmt.Sprintf(formatName, prefixt, i)
+		p := fmt.Sprintf(formatName, prefixp, i)
 		pn.TP(t, p)
 	}
 	return pn
@@ -107,7 +109,7 @@ func (pn *PN) TnPn(n int, prefixt, prefixp string) *PN {
 
 func (pn *PN) TnP(n int, prefixt, p string) *PN {
 	for i := 0; i < n; i += 1 {
-		t := fmt.Sprintf("%s%d", prefixt, i)
+		t := fmt.Sprintf(formatName, prefixt, i)
 		pn.TP(t, p)
 	}
 	return pn
