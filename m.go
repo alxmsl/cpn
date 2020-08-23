@@ -63,6 +63,10 @@ func (m *M) Path() []*E {
 	return m.path
 }
 
+func (m *M) SetValue(v interface{}) {
+	m.v = v
+}
+
 func (m *M) Value() interface{} {
 	return m.v
 }
