@@ -276,7 +276,7 @@ func (s *PNSuite) TestPrintNet(c *C) {
 	n.T("t1", cpn.WithFunction(transition.First))
 	n.P("pout",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(io.NewPrint(io.WriterOption(w))),
+		cpn.WithPlace(io.NewWriter(io.WriterOption(w))),
 	)
 	n.
 		PT("pin", "t1").

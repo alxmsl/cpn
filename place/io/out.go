@@ -34,7 +34,7 @@ func (p *Writer) Out() <-chan *cpn.M {
 	return p.chout
 }
 
-func NewPrint(opts ...cpn.PlaceOption) cpn.Place {
+func NewWriter(opts ...cpn.PlaceOption) cpn.Place {
 	p := &Writer{
 		chin:  make(chan *cpn.M),
 		chout: make(chan *cpn.M),
