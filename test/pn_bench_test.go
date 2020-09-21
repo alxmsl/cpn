@@ -121,12 +121,18 @@ func BenchmarkQueuePTP(b *testing.B) {
 	n := cpn.NewPN()
 	n.P("pin",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(memory.NewQueue(100)),
+		cpn.WithPlaceBuilder(
+			memory.NewQueue,
+			memory.LengthOption(100),
+		),
 	)
 	n.T("t1", cpn.WithFunction(transition.First))
 	n.P("pout",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(memory.NewQueue(100)),
+		cpn.WithPlaceBuilder(
+			memory.NewQueue,
+			memory.LengthOption(100),
+		),
 		cpn.WithKeep(true),
 	)
 
