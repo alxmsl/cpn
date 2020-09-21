@@ -30,10 +30,9 @@ type P struct {
 	out chan *M
 
 	// Storage implementation
-	place Place
-	s     int64
-	i     bool
-	t     bool
+	place   Place
+	s       int64
+	i, k, t bool
 }
 
 func NewP(name string) *P {
@@ -108,6 +107,10 @@ func (p *P) startRecv() {
 
 func (p *P) startSend() {
 	if p.t {
+		if !p.k {
+			for range p.place.Out() {
+			}
+		}
 		return
 	}
 	for atomic.LoadInt64(&p.s)&stateClosed == 0x0 {

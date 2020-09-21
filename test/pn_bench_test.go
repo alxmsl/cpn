@@ -19,6 +19,7 @@ func BenchmarkBlockPTP(b *testing.B) {
 	n.P("pout",
 		cpn.WithContext(context.Background()),
 		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithKeep(true),
 	)
 
 	mm := make([]*cpn.M, b.N)
@@ -52,6 +53,7 @@ func BenchmarkBlockPTPTP(b *testing.B) {
 	n.P("pout",
 		cpn.WithContext(context.Background()),
 		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithKeep(true),
 	)
 
 	mm := make([]*cpn.M, b.N)
@@ -92,6 +94,7 @@ func BenchmarkBlockPTPTPTP(b *testing.B) {
 	n.P("pout",
 		cpn.WithContext(context.Background()),
 		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithKeep(true),
 	)
 
 	mm := make([]*cpn.M, b.N)
@@ -124,6 +127,7 @@ func BenchmarkQueuePTP(b *testing.B) {
 	n.P("pout",
 		cpn.WithContext(context.Background()),
 		cpn.WithPlace(memory.NewQueue(100)),
+		cpn.WithKeep(true),
 	)
 
 	mm := make([]*cpn.M, b.N)
@@ -152,10 +156,12 @@ func BenchmarkPTPP(b *testing.B) {
 	n.P("pout1",
 		cpn.WithContext(context.Background()),
 		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithKeep(true),
 	)
 	n.P("pout2",
 		cpn.WithContext(context.Background()),
 		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithKeep(true),
 	)
 
 	mm := make([]*cpn.M, b.N)
@@ -190,6 +196,7 @@ func BenchmarkPPTP(b *testing.B) {
 	n.P("pout",
 		cpn.WithContext(context.Background()),
 		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithKeep(true),
 	)
 
 	mm := make([]*cpn.M, b.N)
@@ -225,6 +232,7 @@ func BenchmarkPPTTP(b *testing.B) {
 	n.P("pout",
 		cpn.WithContext(context.Background()),
 		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithKeep(true),
 	)
 
 	mm := make([]*cpn.M, b.N)

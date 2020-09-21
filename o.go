@@ -18,6 +18,18 @@ func (o contextOpt) Apply(p *P) {
 	p.ctx = o.ctx
 }
 
+func WithKeep(keep bool) POpt {
+	return keepOpt{keep}
+}
+
+type keepOpt struct {
+	keep bool
+}
+
+func (o keepOpt) Apply(p *P) {
+	p.k = o.keep
+}
+
 func WithPlace(place Place) POpt {
 	return placeOpt{place}
 }

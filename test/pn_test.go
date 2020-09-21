@@ -1,6 +1,7 @@
 package test
 
 import (
+	"github.com/alxmsl/cpn/place/io"
 	"github.com/alxmsl/cpn/place/memory"
 	. "gopkg.in/check.v1"
 
@@ -11,7 +12,6 @@ import (
 	"testing"
 
 	"github.com/alxmsl/cpn"
-	"github.com/alxmsl/cpn/place"
 	"github.com/alxmsl/cpn/transition"
 )
 
@@ -35,6 +35,7 @@ func (s *PNSuite) TestPTP(c *C) {
 	n.P("pout",
 		cpn.WithContext(ctx),
 		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithKeep(true),
 	)
 	n.
 		PT("pin", "t1").
@@ -78,6 +79,7 @@ func (s *PNSuite) TestPTTP(c *C) {
 	n.P("pout",
 		cpn.WithContext(ctx),
 		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithKeep(true),
 	)
 	n.
 		PT("pin", "t1").
@@ -122,10 +124,12 @@ func (s *PNSuite) TestPTPP(c *C) {
 	n.P("pout1",
 		cpn.WithContext(ctx),
 		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithKeep(true),
 	)
 	n.P("pout2",
 		cpn.WithContext(ctx),
 		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithKeep(true),
 	)
 	n.
 		PT("pin", "t").
@@ -174,6 +178,7 @@ func (s *PNSuite) TestPPTP(c *C) {
 	n.P("pout",
 		cpn.WithContext(ctx),
 		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithKeep(true),
 	)
 	n.
 		PT("p1", "t1").
@@ -223,6 +228,7 @@ func (s *PNSuite) TestPPTTP(c *C) {
 	n.P("pout",
 		cpn.WithContext(ctx),
 		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithKeep(true),
 	)
 	n.
 		PT("p1", "t1").
@@ -270,7 +276,7 @@ func (s *PNSuite) TestPrintNet(c *C) {
 	n.T("t1", cpn.WithFunction(transition.First))
 	n.P("pout",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(place.NewPrint(place.WriterOption(w))),
+		cpn.WithPlace(io.NewPrint(io.WriterOption(w))),
 	)
 	n.
 		PT("pin", "t1").
