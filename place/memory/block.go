@@ -1,4 +1,4 @@
-package place
+package memory
 
 import "github.com/alxmsl/cpn"
 

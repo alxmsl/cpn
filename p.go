@@ -2,6 +2,7 @@ package cpn
 
 import (
 	"context"
+	"log"
 	"sync"
 	"sync/atomic"
 
@@ -42,6 +43,9 @@ func NewP(name string) *P {
 
 		ins: skm.NewSKM(),
 		out: make(chan *M),
+
+		i: true,
+		t: true,
 	}
 	return p
 }
@@ -80,6 +84,7 @@ func (p *P) startPlace() {
 func (p *P) startRecv() {
 	atomic.AddInt64(&p.s, stateActive)
 	if p.i {
+		log.Println(p.Name(), "recv: terminated")
 		return
 	}
 
@@ -89,6 +94,7 @@ func (p *P) startRecv() {
 		go func() {
 			defer wg.Done()
 			for m := range v.(chan *M) {
+				log.Println(p.Name(), "recv", m)
 				m.PassP(p.Name())
 				p.place.In() <- m
 			}
@@ -97,19 +103,24 @@ func (p *P) startRecv() {
 	})
 	wg.Wait()
 
+	log.Println(p.Name(), "recv: closing")
 	close(p.place.In())
 	if p.t {
+		log.Println(p.Name(), "recv: out")
 		close(p.out)
 	}
+	log.Println(p.Name(), "recv: closed")
 }
 
 func (p *P) startSend() {
 	if p.t {
+		log.Println(p.Name(), "send: final, terminated")
 		return
 	}
 	for atomic.LoadInt64(&p.s)&stateClosed == 0x0 {
 		select {
 		case m, ok := <-p.place.Out():
+			log.Println(p.Name(), "send", m.Value())
 			if !ok {
 				atomic.AddInt64(&p.s, stateClosed)
 				break
@@ -125,5 +136,7 @@ func (p *P) startSend() {
 			atomic.AddInt64(&p.s, stateClosed)
 		}
 	}
+	log.Println(p.Name(), "send: closing")
 	close(p.out)
+	log.Println(p.Name(), "send: closed")
 }

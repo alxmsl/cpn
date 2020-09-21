@@ -86,6 +86,9 @@ func (t *T) run() {
 		}
 
 		m := t.fn(mm)
+		if m != nil {
+			continue
+		}
 		m.PassT(t.Name())
 
 		t.outs.Over(func(i int, n string, v interface{}) bool {

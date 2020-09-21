@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/alxmsl/cpn"
-	"github.com/alxmsl/cpn/place"
+	"github.com/alxmsl/cpn/place/memory"
 	"github.com/alxmsl/cpn/transition"
 )
 
@@ -15,9 +15,17 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	n := cpn.NewPN()
-	n.P("pin", cpn.WithContext(ctx), cpn.WithPlace(place.NewBlock()), cpn.IsInitial())
+	n.P("pin",
+		cpn.WithContext(ctx),
+		cpn.WithPlace(memory.NewBlock()),
+		//cpn.IsInitial(),
+	)
 	n.Tn(places, "t_", cpn.WithFunction(transition.First))
-	n.Pn(places, "p_", cpn.WithContext(ctx), cpn.WithPlaceBuilder(place.NewBlock), cpn.IsFinal())
+	n.Pn(places, "p_",
+		cpn.WithContext(context.Background()),
+		cpn.WithPlaceBuilder(memory.NewBlock),
+		//cpn.IsFinal(),
+	)
 	n.PTn(places, "pin", "t_").TnPn(places, "t_", "p_")
 
 	go func() {
@@ -28,7 +36,7 @@ func main() {
 	}()
 	for i := 0; i < places; i += 1 {
 		go func(i int) {
-			for m := range n.P(fmt.Sprintf("p_%d", i)).Out() {
+			for m := range n.P(fmt.Sprintf("p_:%d", i)).Out() {
 				fmt.Println(m)
 			}
 		}(i)

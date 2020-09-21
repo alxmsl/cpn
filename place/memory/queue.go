@@ -6,6 +6,7 @@ type Queue struct {
 	q chan *cpn.M
 }
 
+//@todo: replace this with an option
 func NewQueue(size int) *Queue {
 	return &Queue{make(chan *cpn.M, size)}
 }
