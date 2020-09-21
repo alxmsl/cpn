@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/alxmsl/cpn"
+	"github.com/alxmsl/cpn/place/memory"
 )
 
 type Print struct {
@@ -26,7 +27,7 @@ func (o writerOption) Apply(p cpn.Place) {
 }
 
 func NewPrint(opts ...cpn.PlaceOption) cpn.Place {
-	p := &Print{Place: NewBlock(opts...)}
+	p := &Print{Place: memory.NewBlock(opts...)}
 	for _, o := range opts {
 		o.Apply(p)
 	}

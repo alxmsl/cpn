@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/alxmsl/cpn"
-	"github.com/alxmsl/cpn/place"
+	"github.com/alxmsl/cpn/place/memory"
 	"github.com/alxmsl/cpn/transition"
 )
 
@@ -17,12 +17,12 @@ func main() {
 	n := cpn.NewPN()
 	n.P("pin",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(place.NewBlock()),
+		cpn.WithPlace(memory.NewBlock()),
 	)
 	n.Tn(places, "t_", cpn.WithFunction(transition.First))
 	n.Pn(places, "p_",
 		cpn.WithContext(ctx),
-		cpn.WithPlaceBuilder(place.NewBlock),
+		cpn.WithPlaceBuilder(memory.NewBlock),
 	)
 	n.
 		PTn(places, "pin", "t_").

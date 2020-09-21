@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/alxmsl/cpn"
-	"github.com/alxmsl/cpn/place"
+	"github.com/alxmsl/cpn/place/memory"
 )
 
 type RequestContext struct {
@@ -46,7 +46,7 @@ type HttpResponse struct {
 }
 
 func NewHttpResponse() *HttpResponse {
-	return &HttpResponse{place.NewBlock()}
+	return &HttpResponse{memory.NewBlock()}
 }
 
 func (p *HttpResponse) Run() {
@@ -64,7 +64,7 @@ type HttpRequest struct {
 
 func NewHttpRequest(addr, pattern string, cancel context.CancelFunc) *HttpRequest {
 	return &HttpRequest{
-		place.NewBlock(),
+		memory.NewBlock(),
 		addr, pattern,
 		cancel,
 	}

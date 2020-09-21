@@ -1,6 +1,7 @@
 package test
 
 import (
+	"github.com/alxmsl/cpn/place/memory"
 	. "gopkg.in/check.v1"
 
 	"bytes"
@@ -28,12 +29,12 @@ func (s *PNSuite) TestPTP(c *C) {
 	n := cpn.NewPN()
 	n.P("pin",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(place.NewBlock()),
+		cpn.WithPlace(memory.NewBlock()),
 	)
 	n.T("t1", cpn.WithFunction(transition.First))
 	n.P("pout",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(place.NewBlock()),
+		cpn.WithPlace(memory.NewBlock()),
 	)
 	n.
 		PT("pin", "t1").
@@ -70,13 +71,13 @@ func (s *PNSuite) TestPTTP(c *C) {
 	n := cpn.NewPN()
 	n.P("pin",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(place.NewBlock()),
+		cpn.WithPlace(memory.NewBlock()),
 	)
 	n.T("t1", cpn.WithFunction(transition.First))
 	n.T("t2", cpn.WithFunction(transition.First))
 	n.P("pout",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(place.NewBlock()),
+		cpn.WithPlace(memory.NewBlock()),
 	)
 	n.
 		PT("pin", "t1").
@@ -115,16 +116,16 @@ func (s *PNSuite) TestPTPP(c *C) {
 	n := cpn.NewPN()
 	n.P("pin",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(place.NewBlock()),
+		cpn.WithPlace(memory.NewBlock()),
 	)
 	n.T("t", cpn.WithFunction(transition.First))
 	n.P("pout1",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(place.NewBlock()),
+		cpn.WithPlace(memory.NewBlock()),
 	)
 	n.P("pout2",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(place.NewBlock()),
+		cpn.WithPlace(memory.NewBlock()),
 	)
 	n.
 		PT("pin", "t").
@@ -163,16 +164,16 @@ func (s *PNSuite) TestPPTP(c *C) {
 	n := cpn.NewPN()
 	n.P("p1",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(place.NewBlock()),
+		cpn.WithPlace(memory.NewBlock()),
 	)
 	n.P("p2",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(place.NewBlock()),
+		cpn.WithPlace(memory.NewBlock()),
 	)
 	n.T("t1", cpn.WithFunction(transition.First))
 	n.P("pout",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(place.NewBlock()),
+		cpn.WithPlace(memory.NewBlock()),
 	)
 	n.
 		PT("p1", "t1").
@@ -211,17 +212,17 @@ func (s *PNSuite) TestPPTTP(c *C) {
 	n := cpn.NewPN()
 	n.P("p1",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(place.NewBlock()),
+		cpn.WithPlace(memory.NewBlock()),
 	)
 	n.P("p2",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(place.NewBlock()),
+		cpn.WithPlace(memory.NewBlock()),
 	)
 	n.T("t1", cpn.WithFunction(transition.First))
 	n.T("t2", cpn.WithFunction(transition.First))
 	n.P("pout",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(place.NewBlock()),
+		cpn.WithPlace(memory.NewBlock()),
 	)
 	n.
 		PT("p1", "t1").
@@ -264,7 +265,7 @@ func (s *PNSuite) TestPrintNet(c *C) {
 	n := cpn.NewPN()
 	n.P("pin",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(place.NewBlock()),
+		cpn.WithPlace(memory.NewBlock()),
 	)
 	n.T("t1", cpn.WithFunction(transition.First))
 	n.P("pout",
