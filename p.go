@@ -42,6 +42,9 @@ func NewP(name string) *P {
 
 		ins: skm.NewSKM(),
 		out: make(chan *M),
+
+		i: true,
+		t: true,
 	}
 	return p
 }

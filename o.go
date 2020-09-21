@@ -48,26 +48,6 @@ func (o placeBuilderOpt) Apply(p *P) {
 	p.place = o.builder(o.opts...)
 }
 
-func IsFinal() POpt {
-	return finalOpt{}
-}
-
-type finalOpt struct{}
-
-func (o finalOpt) Apply(p *P) {
-	p.t = true
-}
-
-func IsInitial() POpt {
-	return initialOpt{}
-}
-
-type initialOpt struct{}
-
-func (o initialOpt) Apply(p *P) {
-	p.i = true
-}
-
 type TOpt interface {
 	Apply(*T)
 }
