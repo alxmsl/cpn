@@ -32,13 +32,21 @@ func init() {
 }
 
 func main() {
+	fmt.Println("push to the queue:")
 	n1 := newPushPN()
 	n1.RunSync()
 
 	printQueueLength()
 
+	fmt.Println("pop from the queue:")
 	n2 := newPopPN()
 	n2.RunSync()
+}
+
+type MyType int
+
+func (i *MyType) String() string {
+	return fmt.Sprintf("%d\n", int(*i))
 }
 
 func printQueueLength() {
@@ -64,14 +72,18 @@ func newPushPN() *cpn.PN {
 			redis.MarshallerOption(redis.JsonMarshal),
 		),
 	)
+	n.P("print",
+		cpn.WithContext(context.Background()),
+		cpn.WithPlace(io.NewWriter(io.WriterOption(os.Stdout))),
+	)
 	n.
 		PT("pin", "t").
-		TP("t", "queue")
+		TP("t", "queue").
+		TP("t", "print")
 	go func() {
 		for i := 0; i < numberOfTokens; i += 1 {
 			n.P("pin").In() <- cpn.NewM(i)
 		}
-		fmt.Printf("wrote tokens: %d\n", numberOfTokens)
 		n.P("pin").Close()
 	}()
 	return n
@@ -83,7 +95,7 @@ func newPopPN() *cpn.PN {
 		cpn.WithPlaceBuilder(redis.NewPop,
 			redis.PoolOption(pool),
 			redis.KeyOption("my_queue"),
-			redis.TypeOption(reflect.TypeOf(0)),
+			redis.TypeOption(reflect.TypeOf(MyType(0))),
 			redis.UnmarshallerOption(redis.JsonUnmarshal),
 		),
 	)
