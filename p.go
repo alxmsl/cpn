@@ -59,6 +59,10 @@ func (p *P) Name() string {
 	return p.n
 }
 
+func (p *P) Close() {
+	close(p.place.In())
+}
+
 func (p *P) In() chan<- *M {
 	return p.place.In()
 }
