@@ -72,7 +72,7 @@ func newPushPN() *cpn.PN {
 			n.P("pin").In() <- cpn.NewM(i)
 		}
 		fmt.Printf("wrote tokens: %d\n", numberOfTokens)
-		close(n.P("pin").In())
+		n.P("pin").Close()
 	}()
 	return n
 }
@@ -99,7 +99,7 @@ func newPopPN() *cpn.PN {
 		for i := 0; i < numberOfTokens; i += 1 {
 			n.P("queue").In() <- cpn.NewM(nil)
 		}
-		close(n.P("queue").In())
+		n.P("queue").Close()
 	}()
 	return n
 }
