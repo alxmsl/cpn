@@ -1,9 +1,15 @@
 package redis
 
 import (
+	"reflect"
+
 	"github.com/alxmsl/cpn"
 	"github.com/mediocregopher/radix/v3"
 )
+
+type Key interface {
+	SetKey(string)
+}
 
 func KeyOption(k string) cpn.PlaceOption {
 	return keyOption{k}
@@ -14,7 +20,7 @@ type keyOption struct {
 }
 
 func (o keyOption) Apply(p cpn.Place) {
-	p.(*Push).key = o.k
+	p.(Key).SetKey(o.k)
 }
 
 type MarshalFunc func(interface{}) (string, error)
@@ -31,6 +37,10 @@ func (o marshallerOption) Apply(p cpn.Place) {
 	p.(*Push).f = o.f
 }
 
+type Pool interface {
+	SetPool(*radix.Pool)
+}
+
 func PoolOption(pool *radix.Pool) cpn.PlaceOption {
 	return poolOption{pool}
 }
@@ -40,5 +50,31 @@ type poolOption struct {
 }
 
 func (o poolOption) Apply(p cpn.Place) {
-	p.(*Push).pool = o.pool
+	p.(Pool).SetPool(o.pool)
+}
+
+func TypeOption(t reflect.Type) cpn.PlaceOption {
+	return typeOption{t}
+}
+
+type typeOption struct {
+	t reflect.Type
+}
+
+func (o typeOption) Apply(p cpn.Place) {
+	p.(*Pop).t = o.t
+}
+
+type UnmarshalFunc func(string, interface{}) error
+
+func UnmarshallerOption(f UnmarshalFunc) cpn.PlaceOption {
+	return unmarshallerOption{f}
+}
+
+type unmarshallerOption struct {
+	f UnmarshalFunc
+}
+
+func (o unmarshallerOption) Apply(p cpn.Place) {
+	p.(*Pop).f = o.f
 }

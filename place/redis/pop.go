@@ -1,22 +1,25 @@
 package redis
 
 import (
+	"reflect"
+
 	"github.com/alxmsl/cpn"
 	"github.com/mediocregopher/radix/v3"
 )
 
-type Push struct {
+type Pop struct {
 	chin  chan *cpn.M
 	chout chan *cpn.M
 
 	errs chan<- error
-	f    MarshalFunc
+	f    UnmarshalFunc
 	key  string
 	pool *radix.Pool
+	t    reflect.Type
 }
 
-func NewPush(opts ...cpn.PlaceOption) cpn.Place {
-	p := &Push{
+func NewPop(opts ...cpn.PlaceOption) cpn.Place {
+	p := &Pop{
 		chin:  make(chan *cpn.M),
 		chout: make(chan *cpn.M),
 	}
@@ -26,32 +29,41 @@ func NewPush(opts ...cpn.PlaceOption) cpn.Place {
 	return p
 }
 
-func (p *Push) In() chan<- *cpn.M {
+func (p *Pop) In() chan<- *cpn.M {
 	return p.chin
 }
 
-func (p *Push) Out() <-chan *cpn.M {
+func (p *Pop) Out() <-chan *cpn.M {
 	return p.chout
 }
 
-func (p *Push) SetErrs(errs chan<- error) {
+func (p *Pop) SetErrs(errs chan<- error) {
 	p.errs = errs
 }
 
-func (p *Push) SetKey(k string) {
+func (p *Pop) SetKey(k string) {
 	p.key = k
 }
 
-func (p *Push) SetPool(pool *radix.Pool) {
+func (p *Pop) SetPool(pool *radix.Pool) {
 	p.pool = pool
 }
 
-func (p *Push) Run() {
+func (p *Pop) SetType(t reflect.Type) {
+	p.t = t
+}
+
+func (p *Pop) Run() {
 	defer close(p.chout)
+	var (
+		err error
+		s   string
+	)
 	for m := range p.chin {
-		v, err := p.f(m.Value())
+		v := reflect.New(p.t).Interface()
+		err = p.pool.Do(radix.Cmd(&s, "RPOP", p.key))
 		if err == nil {
-			err = p.pool.Do(radix.Cmd(nil, "LPUSH", p.key, v))
+			err = p.f(s, &v)
 		}
 		if err != nil {
 			select {
@@ -60,6 +72,7 @@ func (p *Push) Run() {
 			}
 			continue
 		}
+		m.SetValue(v)
 		p.chout <- m
 	}
 }
