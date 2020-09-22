@@ -1,8 +1,6 @@
 package test
 
 import (
-	"github.com/alxmsl/cpn/place/io"
-	"github.com/alxmsl/cpn/place/memory"
 	. "gopkg.in/check.v1"
 
 	"bytes"
@@ -12,6 +10,8 @@ import (
 	"testing"
 
 	"github.com/alxmsl/cpn"
+	"github.com/alxmsl/cpn/place/io"
+	"github.com/alxmsl/cpn/place/memory"
 	"github.com/alxmsl/cpn/transition"
 )
 
