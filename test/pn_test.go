@@ -13,6 +13,8 @@ import (
 	"github.com/alxmsl/cpn/place/io"
 	"github.com/alxmsl/cpn/place/memory"
 	"github.com/alxmsl/cpn/transition"
+	// "github.com/bandlab/gopkg/pn/common"
+	// "github.com/bandlab/gopkg/pn/common"
 )
 
 func Test(t *testing.T) {
@@ -64,6 +66,34 @@ func (s *PNSuite) TestPTP(c *C) {
 
 		i += 1
 	}
+}
+
+func (s *PNSuite) TestNew(c *C) {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	n := cpn.NewPN()
+	n.P("pin",
+		cpn.WithContext(ctx),
+		cpn.WithPlace(memory.NewBlock()),
+	)
+	n.T("t1", cpn.WithFunction(transition.First))
+	n.P("pout",
+		cpn.WithContext(ctx),
+		cpn.WithPlace(memory.NewBlock()),
+	)
+	n.
+		PT("pin", "t1").
+		TP("t1", "pout")
+
+	msg := cpn.NewM(0)
+	go func() {
+		for i := 1; i < 3; i++ {
+			msg.SetValue(i)
+		}
+		cancel()
+	}()
+	n.RunSync()
+	c.Assert(msg.GetHistory(), HasLen, 3)
 }
 
 func (s *PNSuite) TestPTTP(c *C) {

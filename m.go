@@ -8,6 +8,7 @@ import (
 type M struct {
 	c time.Time
 	v interface{}
+	h []interface{}
 
 	lock sync.RWMutex
 	path []*E
@@ -20,14 +21,25 @@ type E struct {
 }
 
 func NewM(value interface{}) *M {
+	h := make([]interface{}, 0)
+	h = append(h, value)
 	return &M{
 		c: time.Now(),
 		v: value,
+		h: h,
 
 		//@todo: set this value based on PN longest path size to reduce memory allocations
 		path: []*E{},
 		word: []string{},
 	}
+}
+
+func (m *M) appendHistory(v interface{}) {
+	m.h = append(m.h, v)
+}
+
+func (m *M) GetHistory() []interface{} {
+	return m.h
 }
 
 func (m *M) History() []*E {
@@ -64,6 +76,7 @@ func (m *M) Path() []*E {
 }
 
 func (m *M) SetValue(v interface{}) {
+	m.appendHistory(v)
 	m.v = v
 }
 
