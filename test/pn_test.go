@@ -13,8 +13,6 @@ import (
 	"github.com/alxmsl/cpn/place/io"
 	"github.com/alxmsl/cpn/place/memory"
 	"github.com/alxmsl/cpn/transition"
-	// "github.com/bandlab/gopkg/pn/common"
-	// "github.com/bandlab/gopkg/pn/common"
 )
 
 func Test(t *testing.T) {
@@ -94,6 +92,9 @@ func (s *PNSuite) TestNew(c *C) {
 	}()
 	n.RunSync()
 	c.Assert(msg.GetHistory(), HasLen, 3)
+	c.Assert(msg.GetHistory()[0], Equals, 0)
+	c.Assert(msg.GetHistory()[1], Equals, 1)
+	c.Assert(msg.GetHistory()[2], Equals, 2)
 }
 
 func (s *PNSuite) TestPTTP(c *C) {
