@@ -66,35 +66,56 @@ func (s *PNSuite) TestPTP(c *C) {
 	}
 }
 
-func (s *PNSuite) TestNew(c *C) {
+func (s *PNSuite) TestLoopPTPTP(c *C) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	n := cpn.NewPN()
 	n.P("pin",
 		cpn.WithContext(ctx),
 		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithKeep(true),
 	)
 	n.T("t1", cpn.WithFunction(transition.First))
 	n.P("pout",
 		cpn.WithContext(ctx),
 		cpn.WithPlace(memory.NewBlock()),
 	)
+	n.T("t2", cpn.WithFunction(transition.First))
+
 	n.
 		PT("pin", "t1").
-		TP("t1", "pout")
+		TP("t1", "pout").
+		PT("pout", "t2").
+		TP("t2", "pin").
+		Run()
 
-	msg := cpn.NewM(0)
 	go func() {
-		for i := 1; i < 3; i++ {
-			msg.SetValue(i)
+		count := 0
+
+		for m := range n.P("pin").Out() {
+			c.Assert(m.Path(), HasLen, 5)
+			c.Assert(m.Path()[0].N, Equals, "pin")
+			c.Assert(m.Path()[1].N, Equals, "t1")
+			c.Assert(m.Path()[2].N, Equals, "pout")
+			c.Assert(m.Path()[3].N, Equals, "t2")
+			c.Assert(m.Path()[4].N, Equals, "pin")
+
+			count += 1
+		}
+		c.Assert(count, Equals, 1000)
+	}()
+
+	wg := &sync.WaitGroup{}
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for i := 0; i < 1; i += 1 {
+			n.P("pin").In() <- cpn.NewM(i)
 		}
 		cancel()
 	}()
-	n.RunSync()
-	c.Assert(msg.GetHistory(), HasLen, 3)
-	c.Assert(msg.GetHistory()[0], Equals, 0)
-	c.Assert(msg.GetHistory()[1], Equals, 1)
-	c.Assert(msg.GetHistory()[2], Equals, 2)
+	wg.Wait()
 }
 
 func (s *PNSuite) TestPTTP(c *C) {

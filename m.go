@@ -7,12 +7,17 @@ import (
 
 type M struct {
 	c time.Time
-	v interface{}
-	h []interface{}
+
+	payLoads []*v
 
 	lock sync.RWMutex
 	path []*E
 	word []string
+}
+
+type v struct {
+	name  string
+	value interface{}
 }
 
 type E struct {
@@ -21,25 +26,18 @@ type E struct {
 }
 
 func NewM(value interface{}) *M {
-	h := make([]interface{}, 0)
-	h = append(h, value)
+	pp := []*v{}
+	pp = append(pp, &v{
+		value: value,
+	})
 	return &M{
-		c: time.Now(),
-		v: value,
-		h: h,
+		c:        time.Now(),
+		payLoads: pp,
 
 		//@todo: set this value based on PN longest path size to reduce memory allocations
 		path: []*E{},
 		word: []string{},
 	}
-}
-
-func (m *M) appendHistory(v interface{}) {
-	m.h = append(m.h, v)
-}
-
-func (m *M) GetHistory() []interface{} {
-	return m.h
 }
 
 func (m *M) History() []*E {
@@ -75,13 +73,15 @@ func (m *M) Path() []*E {
 	return m.path
 }
 
-func (m *M) SetValue(v interface{}) {
-	m.appendHistory(v)
-	m.v = v
+func (m *M) SetValue(value interface{}) {
+	m.payLoads = append(m.payLoads, &v{
+		name:  m.word[len(m.word)-1],
+		value: value,
+	})
 }
 
 func (m *M) Value() interface{} {
-	return m.v
+	return m.payLoads[len(m.word)-1].value
 }
 
 func (m *M) Word() []string {
