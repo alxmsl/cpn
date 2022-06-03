@@ -105,17 +105,12 @@ func (s *PNSuite) TestLoopPTPTP(c *C) {
 		c.Assert(count, Equals, 1000)
 	}()
 
-	wg := &sync.WaitGroup{}
-
-	wg.Add(1)
 	go func() {
-		defer wg.Done()
 		for i := 0; i < 1; i += 1 {
 			n.P("pin").In() <- cpn.NewM(i)
 		}
 		cancel()
 	}()
-	wg.Wait()
 }
 
 func (s *PNSuite) TestPTTP(c *C) {

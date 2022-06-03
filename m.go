@@ -8,7 +8,7 @@ import (
 type M struct {
 	c time.Time
 
-	payLoads []*v
+	vv []*v
 
 	lock sync.RWMutex
 	path []*E
@@ -26,13 +26,11 @@ type E struct {
 }
 
 func NewM(value interface{}) *M {
-	pp := []*v{}
-	pp = append(pp, &v{
-		value: value,
-	})
 	return &M{
-		c:        time.Now(),
-		payLoads: pp,
+		c: time.Now(),
+		vv: append([]*v{}, &v{
+			value: value,
+		}),
 
 		//@todo: set this value based on PN longest path size to reduce memory allocations
 		path: []*E{},
@@ -74,14 +72,14 @@ func (m *M) Path() []*E {
 }
 
 func (m *M) SetValue(value interface{}) {
-	m.payLoads = append(m.payLoads, &v{
+	m.vv = append(m.vv, &v{
 		name:  m.word[len(m.word)-1],
 		value: value,
 	})
 }
 
 func (m *M) Value() interface{} {
-	return m.payLoads[len(m.word)-1].value
+	return m.vv[len(m.word)-1].value
 }
 
 func (m *M) Word() []string {
