@@ -50,7 +50,7 @@ func (s *PNSuite) TestPTP(c *C) {
 
 	i := 0
 	for m := range n.P("pout").Out() {
-		c.Assert(m.Value().(int), Equals, i)
+		c.Assert(m.Value("", 0).(int), Equals, i)
 		c.Assert(m.Path(), HasLen, 3)
 		c.Assert(m.Path()[0].N, Equals, "pin")
 		c.Assert(m.Path()[1].N, Equals, "t1")
@@ -242,7 +242,7 @@ func (s *PNSuite) TestPPTP(c *C) {
 
 	i := 0
 	for m := range n.P("pout").Out() {
-		c.Assert(m.Value().(int), Equals, i)
+		c.Assert(m.Value("", 0).(int), Equals, i)
 		c.Assert(m.Path(), HasLen, 3)
 		c.Assert(m.Path()[0].N == "p1" || m.Path()[0].N == "p2", Equals, true)
 		c.Assert(m.Path()[1].N, Equals, "t1")

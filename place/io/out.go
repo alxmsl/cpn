@@ -48,10 +48,10 @@ func NewWriter(opts ...cpn.PlaceOption) cpn.Place {
 func (p *Writer) Run() {
 	defer close(p.chout)
 	for m := range p.chin {
-		if str, ok := m.Value().(fmt.Stringer); ok {
+		if str, ok := m.Value(m.Word()[len(m.Word())-1], len(m.Word())-1).(fmt.Stringer); ok {
 			_, _ = fmt.Fprint(p.w, str)
 		} else {
-			_, _ = fmt.Fprintf(p.w, "%#v\n", m.Value())
+			_, _ = fmt.Fprintf(p.w, "%#v\n", m.Value(m.Word()[len(m.Word())-1], len(m.Word())-1))
 		}
 		p.chout <- m
 	}

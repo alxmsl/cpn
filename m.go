@@ -78,12 +78,13 @@ func (m *M) SetValue(value interface{}) {
 	})
 }
 
-func (m *M) Value() interface{} {
-	return m.vv[len(m.word)-1].Value
-}
-
-func (m *M) Values() []*v {
-	return m.vv
+func (m *M) Value(n string, i int) interface{} {
+	for idx, v := range m.vv {
+		if v.Name == n && idx == i {
+			return v.Value
+		}
+	}
+	return m.vv[len(m.Word())-1].Value
 }
 
 func (m *M) Word() []string {
