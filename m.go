@@ -8,7 +8,7 @@ import (
 type M struct {
 	c time.Time
 
-	VV []*V
+	vv []*V
 
 	lock sync.RWMutex
 	path []*E
@@ -28,7 +28,7 @@ type E struct {
 func NewM(value interface{}) *M {
 	return &M{
 		c: time.Now(),
-		VV: append([]*V{}, &V{
+		vv: append([]*V{}, &V{
 			Value: value,
 		}),
 
@@ -72,14 +72,18 @@ func (m *M) Path() []*E {
 }
 
 func (m *M) SetValue(value interface{}) {
-	m.VV = append(m.VV, &V{
+	m.vv = append(m.vv, &V{
 		Name:  m.word[len(m.word)-1],
 		Value: value,
 	})
 }
 
 func (m *M) Value() interface{} {
-	return m.VV[len(m.word)-1].Value
+	return m.vv[len(m.word)-1].Value
+}
+
+func (m *M) Values() []*V {
+	return m.vv
 }
 
 func (m *M) Word() []string {
