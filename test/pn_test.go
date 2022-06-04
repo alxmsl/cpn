@@ -113,6 +113,18 @@ func (s *PNSuite) TestLoopPTPTP(c *C) {
 	}()
 }
 
+func (s *PNSuite) TestPTPValue(c *C) {
+	msg := cpn.NewM(0)
+	msg.PassT("pin")
+	msg.SetValue(1)
+	msg.PassT("pout")
+	msg.SetValue(2)
+
+	c.Assert(msg.Value("", 0), Equals, 0)
+	c.Assert(msg.Value("pin", 1), Equals, 1)
+	c.Assert(msg.Value("pout", 2), Equals, 2)
+}
+
 func (s *PNSuite) TestPTTP(c *C) {
 	ctx, cancel := context.WithCancel(context.Background())
 
