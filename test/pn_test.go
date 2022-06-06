@@ -50,7 +50,7 @@ func (s *PNSuite) TestPTP(c *C) {
 
 	i := 0
 	for m := range n.P("pout").Out() {
-		c.Assert(m.Value("", 0).(int), Equals, i)
+		c.Assert(m.Value().(int), Equals, i)
 		c.Assert(m.Path(), HasLen, 3)
 		c.Assert(m.Path()[0].N, Equals, "pin")
 		c.Assert(m.Path()[1].N, Equals, "t1")
@@ -66,63 +66,16 @@ func (s *PNSuite) TestPTP(c *C) {
 	}
 }
 
-func (s *PNSuite) TestLoopPTPTP(c *C) {
-	ctx, cancel := context.WithCancel(context.Background())
-
-	n := cpn.NewPN()
-	n.P("pin",
-		cpn.WithContext(ctx),
-		cpn.WithPlace(memory.NewBlock()),
-		cpn.WithKeep(true),
-	)
-	n.T("t1", cpn.WithFunction(transition.First))
-	n.P("pout",
-		cpn.WithContext(ctx),
-		cpn.WithPlace(memory.NewBlock()),
-	)
-	n.T("t2", cpn.WithFunction(transition.First))
-
-	n.
-		PT("pin", "t1").
-		TP("t1", "pout").
-		PT("pout", "t2").
-		TP("t2", "pin").
-		Run()
-
-	go func() {
-		count := 0
-
-		for m := range n.P("pin").Out() {
-			c.Assert(m.Path(), HasLen, 5)
-			c.Assert(m.Path()[0].N, Equals, "pin")
-			c.Assert(m.Path()[1].N, Equals, "t1")
-			c.Assert(m.Path()[2].N, Equals, "pout")
-			c.Assert(m.Path()[3].N, Equals, "t2")
-			c.Assert(m.Path()[4].N, Equals, "pin")
-
-			count += 1
-		}
-		c.Assert(count, Equals, 1000)
-	}()
-
-	go func() {
-		for i := 0; i < 1; i += 1 {
-			n.P("pin").In() <- cpn.NewM(i)
-		}
-		cancel()
-	}()
-}
-
-func (s *PNSuite) TestPTPValue(c *C) {
+func (s *PNSuite) TestPTPTPValue(c *C) {
 	msg := cpn.NewM(0)
 	msg.PassT("pin")
 	msg.SetValue(1)
 	msg.PassT("pout")
 	msg.SetValue(2)
 
-	c.Assert(msg.Value("", 0), Equals, 0)
-	c.Assert(msg.Value("pin", 1), Equals, 1)
-	c.Assert(msg.Value("pout", 2), Equals, 2)
+	c.Assert(msg.IdxValue("", 0), Equals, 0)
+	c.Assert(msg.IdxValue("pin", 1), Equals, 1)
+	c.Assert(msg.IdxValue("pout", 2), Equals, 2)
 }
 
 func (s *PNSuite) TestPTTP(c *C) {
@@ -254,7 +207,7 @@ func (s *PNSuite) TestPPTP(c *C) {
 
 	i := 0
 	for m := range n.P("pout").Out() {
-		c.Assert(m.Value("", 0).(int), Equals, i)
+		c.Assert(m.Value().(int), Equals, i)
 		c.Assert(m.Path(), HasLen, 3)
 		c.Assert(m.Path()[0].N == "p1" || m.Path()[0].N == "p2", Equals, true)
 		c.Assert(m.Path()[1].N, Equals, "t1")

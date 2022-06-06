@@ -16,8 +16,8 @@ type M struct {
 }
 
 type v struct {
-	Name  string
-	Value interface{}
+	name  string
+	value interface{}
 }
 
 type E struct {
@@ -28,8 +28,8 @@ type E struct {
 func NewM(value interface{}) *M {
 	return &M{
 		c: time.Now(),
-		vv: append([]*v{}, &v{
-			Value: value,
+		vv: append(make([]*v, 0, 1), &v{
+			value: value,
 		}),
 
 		//@todo: set this value based on PN longest path size to reduce memory allocations
@@ -73,18 +73,22 @@ func (m *M) Path() []*E {
 
 func (m *M) SetValue(value interface{}) {
 	m.vv = append(m.vv, &v{
-		Name:  m.word[len(m.word)-1],
-		Value: value,
+		name:  m.word[len(m.word)-1],
+		value: value,
 	})
 }
 
-func (m *M) Value(n string, i int) interface{} {
+func (m *M) Value() interface{} {
+	return m.vv[len(m.Word())-1].value
+}
+
+func (m *M) IdxValue(n string, i int) interface{} {
 	for idx, v := range m.vv {
-		if v.Name == n && idx == i {
-			return v.Value
+		if v.name == n && idx == i {
+			return v.value
 		}
 	}
-	return m.vv[len(m.Word())-1].Value
+	return m.vv[len(m.Word())-1].value
 }
 
 func (m *M) Word() []string {

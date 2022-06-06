@@ -49,7 +49,7 @@ func (p *Push) SetPool(pool *radix.Pool) {
 func (p *Push) Run() {
 	defer close(p.chout)
 	for m := range p.chin {
-		v, err := p.f(m.Value(m.Word()[len(m.Word())-1], len(m.Word())-1))
+		v, err := p.f(m.Value())
 		if err == nil {
 			err = p.pool.Do(radix.Cmd(nil, "LPUSH", p.key, v))
 		}

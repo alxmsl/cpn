@@ -25,6 +25,6 @@ func (p *Response) Out() <-chan *cpn.M {
 func (p *Response) Run() {
 	defer close(p.chout)
 	for m := range p.chin {
-		m.Value(m.Word()[len(m.Word())-1], len(m.Word())-1).(*RequestContext).Flush()
+		m.Value().(*RequestContext).Flush()
 	}
 }
