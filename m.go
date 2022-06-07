@@ -27,10 +27,8 @@ type E struct {
 
 func NewM(value interface{}) *M {
 	return &M{
-		c: time.Now(),
-		vv: append(make([]*v, 0, 1), &v{
-			value: value,
-		}),
+		c:  time.Now(),
+		vv: []*v{{"", value}},
 
 		//@todo: set this value based on PN longest path size to reduce memory allocations
 		path: []*E{},
@@ -88,7 +86,7 @@ func (m *M) IdxValue(n string, i int) interface{} {
 			return v.value
 		}
 	}
-	return m.vv[len(m.Word())-1].value
+	return nil
 }
 
 func (m *M) Word() []string {
