@@ -26,6 +26,7 @@ type P struct {
 	ctx context.Context
 	n   string
 
+	in  chan *M
 	ins *skm.SKM
 	out chan *M
 
@@ -39,6 +40,7 @@ func NewP(name string) *P {
 	p := &P{
 		n: name,
 
+		in:  make(chan *M),
 		ins: skm.NewSKM(),
 		out: make(chan *M),
 
@@ -64,7 +66,8 @@ func (p *P) Close() {
 }
 
 func (p *P) In() chan<- *M {
-	return p.place.In()
+	return p.in
+	//return p.place.In()
 }
 
 func (p *P) Out() <-chan *M {
@@ -86,6 +89,12 @@ func (p *P) startPlace() {
 func (p *P) startRecv() {
 	atomic.AddInt64(&p.s, stateActive)
 	if p.i {
+		go func() {
+			for m := range p.in {
+				m.PassP(p.Name())
+				p.place.In() <- m
+			}
+		}()
 		return
 	}
 
@@ -133,6 +142,7 @@ func (p *P) startSend() {
 			p.lock.Unlock()
 		case <-p.ctx.Done():
 			atomic.AddInt64(&p.s, stateClosed)
+			close(p.in)
 		}
 	}
 	close(p.out)
