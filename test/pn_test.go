@@ -1,6 +1,8 @@
 package test
 
 import (
+	"log"
+
 	. "gopkg.in/check.v1"
 
 	"bytes"
@@ -24,6 +26,7 @@ type PNSuite struct{}
 var _ = Suite(&PNSuite{})
 
 func (s *PNSuite) TestPTP(c *C) {
+	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 	ctx, cancel := context.WithCancel(context.Background())
 
 	n := cpn.NewPN()
@@ -42,7 +45,7 @@ func (s *PNSuite) TestPTP(c *C) {
 		TP("t1", "pout").
 		Run()
 	go func() {
-		for i := 0; i < 1000; i += 1 {
+		for i := 0; i < 5; i += 1 {
 			n.P("pin").In() <- cpn.NewM(i)
 		}
 		cancel()
@@ -67,15 +70,34 @@ func (s *PNSuite) TestPTP(c *C) {
 }
 
 func (s *PNSuite) TestPTPTPValue(c *C) {
-	msg := cpn.NewM(0)
-	msg.PassT("pin")
-	msg.SetValue(1)
-	msg.PassT("pout")
-	msg.SetValue(2)
+	ctx, cancel := context.WithCancel(context.Background())
 
-	c.Assert(msg.IdxValue("", 0), Equals, 0)
-	c.Assert(msg.IdxValue("pin", 1), Equals, 1)
-	c.Assert(msg.IdxValue("pout", 2), Equals, 2)
+	n := cpn.NewPN()
+	n.P("pin",
+		cpn.WithContext(ctx),
+		cpn.WithPlace(memory.NewBlock()),
+	)
+	n.T("t1", cpn.WithFunction(transition.First))
+	n.P("pout",
+		cpn.WithContext(ctx),
+		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithKeep(true),
+	)
+	n.
+		PT("pin", "t1").
+		TP("t1", "pout").
+		Run()
+
+	go func() {
+		for i := 0; i < 1; i += 1 {
+			n.P("pin").In() <- cpn.NewM(i)
+		}
+		cancel()
+	}()
+
+	for m := range n.P("pout").Out() {
+		c.Assert(m.IdxValue("pin", 0), Equals, 0)
+	}
 }
 
 func (s *PNSuite) TestPTTP(c *C) {
@@ -198,7 +220,7 @@ func (s *PNSuite) TestPPTP(c *C) {
 		TP("t1", "pout").
 		Run()
 	go func() {
-		for i := 0; i < 1000; i += 1 {
+		for i := 0; i < 5; i += 1 {
 			n.P("p1").In() <- cpn.NewM(i)
 			n.P("p2").In() <- cpn.NewM(i)
 		}
@@ -221,6 +243,7 @@ func (s *PNSuite) TestPPTP(c *C) {
 
 		i += 1
 	}
+	c.Assert(i, Equals, 5)
 }
 
 func (s *PNSuite) TestPPTTP(c *C) {

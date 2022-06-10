@@ -1,6 +1,7 @@
 package cpn
 
 import (
+	"log"
 	"runtime"
 
 	"github.com/alxmsl/prmtvs/skm"
@@ -66,10 +67,13 @@ func (t *T) insunlock() {
 }
 
 func (t *T) run() {
+	log.Println("run", t.n)
 	for {
 		t.inslock()
+		log.Println("inslock")
 		if !t.insready() {
 			t.insunlock()
+			log.Println("insunlock_1")
 			runtime.Gosched()
 			continue
 		}
@@ -82,6 +86,7 @@ func (t *T) run() {
 		})
 		if !ok {
 			t.insunlock()
+			log.Println("insunlock_2")
 			break
 		}
 

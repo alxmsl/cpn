@@ -2,6 +2,7 @@ package cpn
 
 import (
 	"context"
+	"log"
 	"sync"
 	"sync/atomic"
 
@@ -26,6 +27,7 @@ type P struct {
 	ctx context.Context
 	n   string
 
+	ch  chan struct{}
 	in  chan *M
 	ins *skm.SKM
 	out chan *M
@@ -40,6 +42,7 @@ func NewP(name string) *P {
 	p := &P{
 		n: name,
 
+		ch:  make(chan struct{}),
 		in:  make(chan *M),
 		ins: skm.NewSKM(),
 		out: make(chan *M),
@@ -67,7 +70,6 @@ func (p *P) Close() {
 
 func (p *P) In() chan<- *M {
 	return p.in
-	//return p.place.In()
 }
 
 func (p *P) Out() <-chan *M {
@@ -83,10 +85,12 @@ func (p *P) ready() bool {
 }
 
 func (p *P) startPlace() {
+	log.Println("startPlace", p.n)
 	p.place.Run()
 }
 
 func (p *P) startRecv() {
+	log.Println("startRecv", p.n)
 	atomic.AddInt64(&p.s, stateActive)
 	if p.i {
 		go func() {
@@ -94,6 +98,7 @@ func (p *P) startRecv() {
 				m.PassP(p.Name())
 				p.place.In() <- m
 			}
+			close(p.ch)
 		}()
 		return
 	}
@@ -119,6 +124,7 @@ func (p *P) startRecv() {
 }
 
 func (p *P) startSend() {
+	log.Println("startsend", p.n)
 	if p.t {
 		if !p.k {
 			for range p.place.Out() {
@@ -129,6 +135,7 @@ func (p *P) startSend() {
 	for atomic.LoadInt64(&p.s)&stateClosed == 0x0 {
 		select {
 		case m, ok := <-p.place.Out():
+			log.Println("2", p.n)
 			if !ok {
 				atomic.AddInt64(&p.s, stateClosed)
 				break
@@ -139,11 +146,17 @@ func (p *P) startSend() {
 			p.out <- m
 
 			atomic.AddInt64(&p.s, -stateReady)
+			log.Println("unlock", p.n)
 			p.lock.Unlock()
 		case <-p.ctx.Done():
-			atomic.AddInt64(&p.s, stateClosed)
+			log.Println("3", p.n)
 			close(p.in)
+			if p.i {
+				<-p.ch
+			}
+			atomic.AddInt64(&p.s, stateClosed)
 		}
 	}
+	log.Println("close", p.n)
 	close(p.out)
 }
