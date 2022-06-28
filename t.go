@@ -86,7 +86,7 @@ func (t *T) run() {
 		}
 
 		m := t.fn(mm)
-		m.PassT(t.Name())
+		m.passT(t)
 
 		t.outs.Over(func(i int, n string, v interface{}) bool {
 			in, _ := v.(*P).ins.GetByKey(t.Name())
