@@ -95,7 +95,7 @@ func (p *P) startRecv() {
 		go func() {
 			defer wg.Done()
 			for m := range v.(chan *M) {
-				m.PassP(p.Name())
+				m.passP(p)
 				p.place.In() <- m
 			}
 		}()
@@ -112,7 +112,8 @@ func (p *P) startRecv() {
 func (p *P) startSend() {
 	if p.t {
 		if !p.k {
-			for range p.place.Out() {
+			for m := range p.place.Out() {
+				m.passP(p)
 			}
 		}
 		return
@@ -126,7 +127,7 @@ func (p *P) startSend() {
 			}
 			atomic.AddInt64(&p.s, stateReady)
 
-			m.PassP(p.Name())
+			m.passP(p)
 			p.out <- m
 
 			atomic.AddInt64(&p.s, -stateReady)

@@ -5,18 +5,30 @@ import (
 	"time"
 )
 
+// The M struct represents a mark of Petri Net
 type M struct {
 	c time.Time
+	// v contains the current mark value
 	v interface{}
+	// vv contains mark values related to places
+	vv []*v
 
 	lock sync.RWMutex
+	// path contains all edges - both places and transitions - are passed by the mark
 	path []*E
+	// word contains all transitions are passed by the mark
 	word []string
 }
 
 type E struct {
 	T time.Time
 	N string
+}
+
+// The v struct represents a mark's value written from the specific place
+type v struct {
+	p *P
+	v interface{}
 }
 
 func NewM(value interface{}) *M {
@@ -36,25 +48,38 @@ func (m *M) History() []*E {
 	return append([]*E{{m.c, ""}}, m.path...)
 }
 
-func (m *M) PassP(n string) {
+// passP is called when the mark passed place in the net
+func (m *M) passP(p *P) {
 	m.lock.RLock()
-	if len(m.path) == 0 || m.path[len(m.path)-1].N != n {
+	if len(m.path) == 0 || m.path[len(m.path)-1].N != p.n {
 		m.lock.RUnlock()
 		m.lock.Lock()
 		defer m.lock.Unlock()
-		if len(m.path) == 0 || m.path[len(m.path)-1].N != n {
-			m.path = append(m.path, &E{time.Now(), n})
+		if len(m.path) == 0 || m.path[len(m.path)-1].N != p.n {
+			m.path = append(m.path, &E{time.Now(), p.n})
+			if m.v != nil {
+				m.vv = append(m.vv, &v{p, m.v})
+				m.v = nil
+			}
 		}
+		return
+	} else if m.v != nil {
+		m.lock.RUnlock()
+		m.lock.Lock()
+		defer m.lock.Unlock()
+		m.vv = append(m.vv, &v{p, m.v})
+		m.v = nil
 		return
 	}
 	m.lock.RUnlock()
 }
 
-func (m *M) PassT(n string) {
+// passT is called when the mark passed transition in the net
+func (m *M) passT(t *T) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
-	m.path = append(m.path, &E{time.Now(), n})
-	m.word = append(m.word, n)
+	m.path = append(m.path, &E{time.Now(), t.n})
+	m.word = append(m.word, t.n)
 }
 
 func (m *M) Path() []*E {
@@ -63,12 +88,41 @@ func (m *M) Path() []*E {
 	return m.path
 }
 
+// SetValue sets the current value to the mark
 func (m *M) SetValue(v interface{}) {
 	m.v = v
 }
 
+// Value returns the current value.
+// If the current value is nil, then tries to get the latest written value by using ValueByPlace function
 func (m *M) Value() interface{} {
-	return m.v
+	if m.v != nil {
+		return m.v
+	}
+	return m.ValueByPlace("", 0)
+}
+
+// ValueByPlace returns the mark's value specified from the place with name and deep.
+// If name is empty, then function returns just latest written value.
+// Parameter `deep` is used to define how deep place should be used, what is actual for nets with loop
+func (m *M) ValueByPlace(name string, deep int) interface{} {
+	if name == "" && len(m.vv) == 0 {
+		return m.v
+	}
+
+	var c int
+	for i := len(m.vv) - 1; i >= 0; i -= 1 {
+		if name == "" {
+			return m.vv[i].v
+		}
+		if m.vv[i].p.n == name {
+			if c == deep {
+				return m.vv[i].v
+			}
+			c += 1
+		}
+	}
+	return nil
 }
 
 func (m *M) Word() []string {
