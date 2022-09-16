@@ -10,7 +10,7 @@ type Cancel interface {
 	SetCancel(context.CancelFunc)
 }
 
-func CancelOption(f context.CancelFunc) cpn.PlaceOption {
+func CancelOption(f context.CancelFunc) cpn.StrategyOption {
 	return cancelOption{f}
 }
 
@@ -18,7 +18,7 @@ type cancelOption struct {
 	f context.CancelFunc
 }
 
-func (o cancelOption) Apply(p cpn.Place) {
+func (o cancelOption) Apply(p cpn.Strategy) {
 	p.(Cancel).SetCancel(o.f)
 }
 
@@ -26,7 +26,7 @@ type Erring interface {
 	SetErrs(chan<- error)
 }
 
-func ErrorsOutOption(errs chan<- error) cpn.PlaceOption {
+func ErrorsOutOption(errs chan<- error) cpn.StrategyOption {
 	return errorsOutOption{errs}
 }
 
@@ -34,7 +34,7 @@ type errorsOutOption struct {
 	errs chan<- error
 }
 
-func (o errorsOutOption) Apply(p cpn.Place) {
+func (o errorsOutOption) Apply(p cpn.Strategy) {
 	p.(Erring).SetErrs(o.errs)
 }
 

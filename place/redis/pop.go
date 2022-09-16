@@ -18,7 +18,7 @@ type Pop struct {
 	t    reflect.Type
 }
 
-func NewPop(opts ...cpn.PlaceOption) cpn.Place {
+func NewPop(opts ...cpn.StrategyOption) cpn.Strategy {
 	p := &Pop{
 		chin:  make(chan *cpn.M),
 		chout: make(chan *cpn.M),

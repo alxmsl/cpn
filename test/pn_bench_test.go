@@ -13,12 +13,12 @@ func BenchmarkBlockPTP(b *testing.B) {
 	n := cpn.NewPN()
 	n.P("pin",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
-	n.T("t1", cpn.WithFunction(transition.First))
+	n.T("t1", cpn.WithTransformation(transition.First))
 	n.P("pout",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 		cpn.WithKeep(true),
 	)
 
@@ -42,17 +42,17 @@ func BenchmarkBlockPTPTP(b *testing.B) {
 	n := cpn.NewPN()
 	n.P("pin",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
-	n.T("t1", cpn.WithFunction(transition.First))
+	n.T("t1", cpn.WithTransformation(transition.First))
 	n.P("p1",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
-	n.T("t2", cpn.WithFunction(transition.First))
+	n.T("t2", cpn.WithTransformation(transition.First))
 	n.P("pout",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 		cpn.WithKeep(true),
 	)
 
@@ -78,22 +78,22 @@ func BenchmarkBlockPTPTPTP(b *testing.B) {
 	n := cpn.NewPN()
 	n.P("pin",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
-	n.T("t1", cpn.WithFunction(transition.First))
+	n.T("t1", cpn.WithTransformation(transition.First))
 	n.P("p1",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
-	n.T("t2", cpn.WithFunction(transition.First))
+	n.T("t2", cpn.WithTransformation(transition.First))
 	n.P("p2",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
-	n.T("t3", cpn.WithFunction(transition.First))
+	n.T("t3", cpn.WithTransformation(transition.First))
 	n.P("pout",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 		cpn.WithKeep(true),
 	)
 
@@ -121,15 +121,15 @@ func BenchmarkQueuePTP(b *testing.B) {
 	n := cpn.NewPN()
 	n.P("pin",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlaceBuilder(
+		cpn.WithStrategyBuilder(
 			memory.NewQueue,
 			memory.LengthOption(100),
 		),
 	)
-	n.T("t1", cpn.WithFunction(transition.First))
+	n.T("t1", cpn.WithTransformation(transition.First))
 	n.P("pout",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlaceBuilder(
+		cpn.WithStrategyBuilder(
 			memory.NewQueue,
 			memory.LengthOption(100),
 		),
@@ -156,17 +156,17 @@ func BenchmarkPTPP(b *testing.B) {
 	n := cpn.NewPN()
 	n.P("pin",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
-	n.T("t", cpn.WithFunction(transition.First))
+	n.T("t", cpn.WithTransformation(transition.First))
 	n.P("pout1",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 		cpn.WithKeep(true),
 	)
 	n.P("pout2",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 		cpn.WithKeep(true),
 	)
 
@@ -192,16 +192,16 @@ func BenchmarkPPTP(b *testing.B) {
 	n := cpn.NewPN()
 	n.P("p1",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
 	n.P("p2",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
-	n.T("t1", cpn.WithFunction(transition.First))
+	n.T("t1", cpn.WithTransformation(transition.First))
 	n.P("pout",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 		cpn.WithKeep(true),
 	)
 
@@ -227,17 +227,17 @@ func BenchmarkPPTTP(b *testing.B) {
 	n := cpn.NewPN()
 	n.P("p1",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
-	n.T("t1", cpn.WithFunction(transition.First))
+	n.T("t1", cpn.WithTransformation(transition.First))
 	n.P("p2",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
-	n.T("t2", cpn.WithFunction(transition.First))
+	n.T("t2", cpn.WithTransformation(transition.First))
 	n.P("pout",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 		cpn.WithKeep(true),
 	)
 

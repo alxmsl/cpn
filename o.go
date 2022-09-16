@@ -2,11 +2,13 @@ package cpn
 
 import "context"
 
-type POpt interface {
+// PlaceOption is an abstraction to define place options
+type PlaceOption interface {
 	Apply(*P)
 }
 
-func WithContext(ctx context.Context) POpt {
+// WithContext creates an option to use context
+func WithContext(ctx context.Context) PlaceOption {
 	return contextOpt{ctx}
 }
 
@@ -18,7 +20,8 @@ func (o contextOpt) Apply(p *P) {
 	p.ctx = o.ctx
 }
 
-func WithKeep(keep bool) POpt {
+// WithKeep creates an option to keep token in a terminal place
+func WithKeep(keep bool) PlaceOption {
 	return keepOpt{keep}
 }
 
@@ -30,48 +33,55 @@ func (o keepOpt) Apply(p *P) {
 	p.k = o.keep
 }
 
-func WithPlace(place Place) POpt {
-	return placeOpt{place}
+// WithStrategy creates an option to use specific strategy
+func WithStrategy(s Strategy) PlaceOption {
+	return strategyOpt{s}
 }
 
-type placeOpt struct {
-	place Place
+type strategyOpt struct {
+	strategy Strategy
 }
 
-func (o placeOpt) Apply(p *P) {
-	p.place = o.place
+func (o strategyOpt) Apply(p *P) {
+	p.strategy = o.strategy
 }
 
-type PlaceBuilder func(opts ...PlaceOption) Place
-type PlaceOption interface {
-	Apply(Place)
+// StrategyBuilder creates new strategy with required options
+type StrategyBuilder func(opts ...StrategyOption) Strategy
+
+// StrategyOption is an abstraction to define strategy option
+type StrategyOption interface {
+	Apply(Strategy)
 }
 
-func WithPlaceBuilder(builder PlaceBuilder, opts ...PlaceOption) POpt {
-	return placeBuilderOpt{builder, opts}
+// WithStrategyBuilder returns an option to create strategy with required options
+func WithStrategyBuilder(builder StrategyBuilder, opts ...StrategyOption) PlaceOption {
+	return strategyBuilderOpt{builder, opts}
 }
 
-type placeBuilderOpt struct {
-	builder PlaceBuilder
-	opts    []PlaceOption
+type strategyBuilderOpt struct {
+	builder StrategyBuilder
+	opts    []StrategyOption
 }
 
-func (o placeBuilderOpt) Apply(p *P) {
-	p.place = o.builder(o.opts...)
+func (o strategyBuilderOpt) Apply(p *P) {
+	p.strategy = o.builder(o.opts...)
 }
 
-type TOpt interface {
+// TransitionOption is an abstraction to define a transition option
+type TransitionOption interface {
 	Apply(*T)
 }
 
-func WithFunction(fn Transition) TOpt {
-	return transitionOpt{fn}
+// WithTransformation return a transition option to use specified transformation
+func WithTransformation(fn Transformation) TransitionOption {
+	return transformationOpt{fn}
 }
 
-type transitionOpt struct {
-	fn Transition
+type transformationOpt struct {
+	transformation Transformation
 }
 
-func (o transitionOpt) Apply(t *T) {
-	t.fn = o.fn
+func (o transformationOpt) Apply(t *T) {
+	t.transformation = o.transformation
 }

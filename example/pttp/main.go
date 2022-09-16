@@ -14,13 +14,13 @@ func main() {
 	n := cpn.NewPN()
 	n.P("pin",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
-	n.T("t1", cpn.WithFunction(transition.First))
-	n.T("t2", cpn.WithFunction(transition.First))
+	n.T("t1", cpn.WithTransformation(transition.First))
+	n.T("t2", cpn.WithTransformation(transition.First))
 	n.P("pout",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
 	n.
 		PT("pin", "t1").

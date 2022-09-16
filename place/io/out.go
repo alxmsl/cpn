@@ -7,7 +7,7 @@ import (
 	"github.com/alxmsl/cpn"
 )
 
-func WriterOption(w io.Writer) cpn.PlaceOption {
+func WriterOption(w io.Writer) cpn.StrategyOption {
 	return writerOption{w}
 }
 
@@ -15,7 +15,7 @@ type writerOption struct {
 	w io.Writer
 }
 
-func (o writerOption) Apply(p cpn.Place) {
+func (o writerOption) Apply(p cpn.Strategy) {
 	p.(*Writer).w = o.w
 }
 
@@ -34,7 +34,7 @@ func (p *Writer) Out() <-chan *cpn.M {
 	return p.chout
 }
 
-func NewWriter(opts ...cpn.PlaceOption) cpn.Place {
+func NewWriter(opts ...cpn.StrategyOption) cpn.Strategy {
 	p := &Writer{
 		chin:  make(chan *cpn.M),
 		chout: make(chan *cpn.M),

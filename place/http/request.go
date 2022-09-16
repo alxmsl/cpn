@@ -7,7 +7,7 @@ import (
 	"github.com/alxmsl/cpn"
 )
 
-func AddressOption(addr string) cpn.PlaceOption {
+func AddressOption(addr string) cpn.StrategyOption {
 	return addressOption{addr}
 }
 
@@ -15,11 +15,11 @@ type addressOption struct {
 	addr string
 }
 
-func (o addressOption) Apply(p cpn.Place) {
+func (o addressOption) Apply(p cpn.Strategy) {
 	p.(*Request).addr = o.addr
 }
 
-func PatternOption(pattern string) cpn.PlaceOption {
+func PatternOption(pattern string) cpn.StrategyOption {
 	return patternOption{pattern}
 }
 
@@ -27,7 +27,7 @@ type patternOption struct {
 	pattern string
 }
 
-func (o patternOption) Apply(p cpn.Place) {
+func (o patternOption) Apply(p cpn.Strategy) {
 	p.(*Request).pattern = o.pattern
 }
 
@@ -39,7 +39,7 @@ type Request struct {
 	cancel        context.CancelFunc
 }
 
-func NewRequest(opts ...cpn.PlaceOption) cpn.Place {
+func NewRequest(opts ...cpn.StrategyOption) cpn.Strategy {
 	p := &Request{
 		chin:  make(chan *cpn.M),
 		chout: make(chan *cpn.M),

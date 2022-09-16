@@ -14,16 +14,16 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	n := cpn.NewPN()
 	n.P("pin", cpn.WithContext(ctx),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
-	n.T("t", cpn.WithFunction(transition.First))
+	n.T("t", cpn.WithTransformation(transition.First))
 	n.P("pout1",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
 	n.P("pout2",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
 	n.
 		PT("pin", "t").

@@ -4,7 +4,7 @@ import "github.com/alxmsl/cpn"
 
 const defaultLength = 1
 
-func LengthOption(length int) cpn.PlaceOption {
+func LengthOption(length int) cpn.StrategyOption {
 	return lengthOption{length}
 }
 
@@ -12,7 +12,7 @@ type lengthOption struct {
 	l int
 }
 
-func (o lengthOption) Apply(p cpn.Place) {
+func (o lengthOption) Apply(p cpn.Strategy) {
 	p.(*Queue).l = o.l
 }
 
@@ -21,7 +21,7 @@ type Queue struct {
 	l int
 }
 
-func NewQueue(opts ...cpn.PlaceOption) cpn.Place {
+func NewQueue(opts ...cpn.StrategyOption) cpn.Strategy {
 	p := &Queue{
 		l: defaultLength,
 	}

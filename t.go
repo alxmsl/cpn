@@ -6,28 +6,35 @@ import (
 	"github.com/alxmsl/prmtvs/skm"
 )
 
-type Transition func(in []*M) *M
+// Transformation defines a custom behaviour for a transition
+type Transformation func(in []*M) *M
 
+// T implements an abstract transition in PN
 type T struct {
-	n string
+	// name is a transition name in the PN. This is good to have it unique
+	name string
 
-	ins  *skm.SKM
+	// transformation defines behaviour for the transition. Transition awaits tokens from each incoming edge. All tokens
+	// are passed to the transformation. Transformation returns a token which will be passed to the following places
+	transformation Transformation
+
+	// ins is a sorted set of incoming edges
+	ins *skm.SKM
+	// outs is a sorted set of outgoing edges
 	outs *skm.SKM
-
-	fn Transition
 }
 
+// NewT creates a new transition with required name
 func NewT(name string) *T {
-	t := &T{
-		n: name,
+	return &T{
+		name: name,
 
 		ins:  skm.NewSKM(),
 		outs: skm.NewSKM(),
 	}
-	return t
 }
 
-func (t *T) SetOptions(opts ...TOpt) *T {
+func (t *T) SetOptions(opts ...TransitionOption) *T {
 	for _, opt := range opts {
 		opt.Apply(t)
 	}
@@ -35,12 +42,12 @@ func (t *T) SetOptions(opts ...TOpt) *T {
 }
 
 func (t *T) Name() string {
-	return t.n
+	return t.name
 }
 
 func (t *T) inslock() {
 	t.ins.Over(func(i int, n string, v interface{}) bool {
-		v.(*P).lock.Lock()
+		v.(*P).mu.Lock()
 		return true
 	})
 }
@@ -60,7 +67,7 @@ func (t *T) insready() bool {
 
 func (t *T) insunlock() {
 	t.ins.Over(func(i int, n string, v interface{}) bool {
-		v.(*P).lock.Unlock()
+		v.(*P).mu.Unlock()
 		return true
 	})
 }
@@ -85,7 +92,7 @@ func (t *T) run() {
 			break
 		}
 
-		m := t.fn(mm)
+		m := t.transformation(mm)
 		m.passT(t)
 
 		t.outs.Over(func(i int, n string, v interface{}) bool {

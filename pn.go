@@ -22,7 +22,7 @@ func NewPN() *PN {
 	return pn
 }
 
-func (pn *PN) P(name string, opts ...POpt) *P {
+func (pn *PN) P(name string, opts ...PlaceOption) *P {
 	if v, ok := pn.pp.GetByKey(name); ok {
 		return v.(*P)
 	}
@@ -31,7 +31,7 @@ func (pn *PN) P(name string, opts ...POpt) *P {
 	return p
 }
 
-func (pn *PN) Pn(n int, prefix string, opts ...POpt) {
+func (pn *PN) Pn(n int, prefix string, opts ...PlaceOption) {
 	for i := 0; i < n; i += 1 {
 		name := fmt.Sprintf(formatName, prefix, i)
 		pn.P(name, opts...)
@@ -69,7 +69,7 @@ func (pn *PN) PnT(n int, prefixp, t string) *PN {
 	return pn
 }
 
-func (pn *PN) T(name string, opts ...TOpt) *T {
+func (pn *PN) T(name string, opts ...TransitionOption) *T {
 	if v, ok := pn.tt.GetByKey(name); ok {
 		return v.(*T)
 	}
@@ -78,7 +78,7 @@ func (pn *PN) T(name string, opts ...TOpt) *T {
 	return t
 }
 
-func (pn *PN) Tn(n int, prefix string, opts ...TOpt) {
+func (pn *PN) Tn(n int, prefix string, opts ...TransitionOption) {
 	for i := 0; i < n; i += 1 {
 		name := fmt.Sprintf(formatName, prefix, i)
 		pn.T(name, opts...)
@@ -119,9 +119,9 @@ func (pn *PN) TnP(n int, prefixt, p string) *PN {
 
 func (pn *PN) Run() {
 	pn.pp.Over(func(i int, n string, v interface{}) bool {
-		go v.(*P).startPlace()
-		go v.(*P).startRecv()
-		go v.(*P).startSend()
+		go v.(*P).run()
+		go v.(*P).recv()
+		go v.(*P).send()
 		return true
 	})
 	pn.tt.Over(func(i int, n string, v interface{}) bool {
@@ -136,15 +136,15 @@ func (pn *PN) RunSync() {
 		wg.Add(3)
 		go func() {
 			defer wg.Done()
-			v.(*P).startPlace()
+			v.(*P).run()
 		}()
 		go func() {
 			defer wg.Done()
-			v.(*P).startRecv()
+			v.(*P).recv()
 		}()
 		go func() {
 			defer wg.Done()
-			v.(*P).startSend()
+			v.(*P).send()
 		}()
 		return true
 	})
