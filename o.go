@@ -2,6 +2,18 @@ package cpn
 
 import "context"
 
+const (
+	// optionInitial means an initial place in the PN. Initial place doesn't have incoming edges
+	optionInitial uint64 = 1 << 0
+	// optionKeep means to don't clean up Strategy object in the terminal place. This is used for test purposes
+	optionKeep uint64 = 1 << 1
+	// optionLog means need to log an entity behaviour. Be careful, because this option makes syscalls what could change
+	// a scheduler behaviour
+	optionLog uint64 = 1 << 2
+	// optionTerminal means a terminal place in the PN. Terminal place doesn't have outgoing edges
+	optionTerminal uint64 = 1 << 3
+)
+
 // PlaceOption is an abstraction to define place options
 type PlaceOption interface {
 	Apply(*P)
@@ -30,7 +42,11 @@ type keepOpt struct {
 }
 
 func (o keepOpt) Apply(p *P) {
-	p.k = o.keep
+	if o.keep {
+		p.o |= optionKeep
+		return
+	}
+	p.o &= ^optionKeep
 }
 
 // WithStrategy creates an option to use specific strategy

@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+
 	. "gopkg.in/check.v1"
 
 	"github.com/alxmsl/cpn"
@@ -82,8 +83,9 @@ func (s *StrategiesSuite) TestForkStrategy(c *C) {
 		TP("t2.2", "pout2").
 		Run()
 
-	const loops = 2
-	// Writes several token to the PN concurrently
+	// Writes several token to the PN concurrently. We use bigger number to be sure tokens are passed through several
+	// branches. With small number tokens may be passed through one branch
+	const loops = 10
 	for i := 0; i < loops; i += 1 {
 		n.P("pin").In() <- cpn.NewM("initial value")
 	}
@@ -164,10 +166,6 @@ func (s *StrategiesSuite) TestJoinStrategy(c *C) {
 	// Writes several token to the PN concurrently
 	n.P("pin1").Send(cpn.NewM("initial value 1"))
 	n.P("pin2").Send(cpn.NewM("initial value 2"))
-
-	// @todo: temporary commented
-	//n.P("pin1").Close()
-	//n.P("pin2").Close()
 	cancel()
 
 	// Expects an aggregated token

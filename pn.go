@@ -40,7 +40,7 @@ func (pn *PN) Pn(n int, prefix string, opts ...PlaceOption) {
 
 func (pn *PN) PT(p, t string) *PN {
 	pn.T(t).ins.Add(pn.P(p).Name(), pn.P(p))
-	pn.P(p).t = false
+	pn.P(p).o &= ^optionTerminal
 	return pn
 }
 
@@ -88,7 +88,7 @@ func (pn *PN) Tn(n int, prefix string, opts ...TransitionOption) {
 func (pn *PN) TP(t, p string) *PN {
 	pn.P(p).ins.Add(pn.T(t).Name(), make(chan *M))
 	pn.T(t).outs.Add(pn.P(p).Name(), pn.P(p))
-	pn.P(p).i = false
+	pn.P(p).o &= ^optionInitial
 	return pn
 }
 

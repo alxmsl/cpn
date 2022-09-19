@@ -2,10 +2,9 @@ package cpn
 
 import (
 	"context"
-	"github.com/alxmsl/cpn/trace"
 	"sync"
-	"sync/atomic"
 
+	"github.com/alxmsl/cpn/trace"
 	"github.com/alxmsl/prmtvs/skm"
 )
 
@@ -19,8 +18,9 @@ type Strategy interface {
 
 // P implements an abstract place in PN
 type P struct {
-	ctx context.Context
-	mu  sync.Mutex
+	ctx  context.Context
+	lock sync.RWMutex
+	mu   sync.Mutex
 
 	// name is a place name in the PN. Should be unique
 	name string
@@ -37,30 +37,28 @@ type P struct {
 	// out is a channel for outgoing edges
 	out chan *M
 
-	// State flags for an abstract place:
-	//  - i means an initial place in the PN. Initial place doesn't have incoming edges
-	//  - k means to don't clean up Strategy object in the terminal place. This is used for test purposes
-	//  - l means need to log an entity behaviour
-	//  - t means a terminal place in the PN. Terminal place doesn't have outgoing edges
-	i, k, l, t bool
+	// o keeps a static options flags for an abstract place. See options constants for details
+	o uint64
 
-	// s keeps an internal state for the place. See state constants for details
-	s int64
+	// s keeps a dynamic state for the place. See state constants for details
+	s uint64
 }
 
 // NewP creates a new place with specific name. By default, place is both initial and terminal. When place is linked to
 // transition default state is changed
 func NewP(name string) *P {
-	return &P{
+	var p = &P{
 		name: name,
 
 		ins: skm.NewSKM(),
 		out: make(chan *M),
 
-		i: true,
-		l: trace.NeedLog(name),
-		t: true,
+		o: optionInitial | optionTerminal,
 	}
+	if trace.NeedLog(p.name) {
+		p.o |= optionLog
+	}
+	return p
 }
 
 func (p *P) SetOptions(opts ...PlaceOption) *P {
@@ -83,41 +81,58 @@ func (p *P) In() chan<- *M {
 }
 
 func (p *P) Out() <-chan *M {
-	if !p.t {
-		return nil
+	if p.o&optionTerminal > 0x0 {
+		return p.strategy.Out()
 	}
-	return p.strategy.Out()
+	return nil
 }
 
 func (p *P) Send(m *M) {
-	if p.l {
+	if p.o&optionLog > 0x0 {
 		trace.Log(p.name, "[recv (direct)]", "v:", m.Value())
 	}
-	atomic.AddInt64(&p.s, stateProcessing)
+	p.setState(stateProcessing)
 	p.In() <- m
 }
 
+func (p *P) setState(state uint64) {
+	p.lock.Lock()
+	defer p.lock.Unlock()
+	p.s |= state
+}
+
+func (p *P) unsetState(state uint64) {
+	p.lock.Lock()
+	defer p.lock.Unlock()
+	p.s &= ^state
+}
+
+func (p *P) state() uint64 {
+	p.lock.RLock()
+	defer p.lock.RUnlock()
+	return p.s
+}
+
 func (p *P) ready() bool {
-	s := atomic.LoadInt64(&p.s)
-	return s&(stateReady|stateClosed) > 0x0
+	return p.state()&(stateReady|stateClosed) > 0x0
 }
 
 func (p *P) run() {
-	if p.l {
-		trace.Log(p.name, "[running...]", "i:", p.i, "k:", p.k, "t:", p.t)
+	if p.o&optionLog > 0x0 {
+		trace.Logf("%s [running...] o:%064b\n", p.name, p.o)
 		defer trace.Log(p.name, "[running completed]")
 	}
 	p.strategy.Run()
 }
 
 func (p *P) recv() {
-	if p.l {
+	if p.o&optionLog > 0x0 {
 		trace.Log(p.name, "[receiving...]")
 		defer trace.Log(p.name, "[receiving completed]")
 	}
 
-	if p.i {
-		if p.l {
+	if p.o&optionInitial > 0x0 {
+		if p.o&optionLog > 0x0 {
 			trace.Log(p.name, "[initial place detected]")
 		}
 		return
@@ -126,20 +141,20 @@ func (p *P) recv() {
 	wg := &sync.WaitGroup{}
 	wg.Add(p.ins.Len())
 	p.ins.Over(func(i int, n string, v interface{}) bool {
-		if p.l {
+		if p.o&optionLog > 0x0 {
 			trace.Log(p.name, "[listening...]", "n:", n)
 		}
 		go func() {
-			if p.l {
+			if p.o&optionLog > 0x0 {
 				defer trace.Log(p.name, "[stop listening]", "n:", n)
 			}
 			defer wg.Done()
 			for m := range v.(chan *M) {
 				m.passP(p)
-				if p.l {
+				if p.o&optionLog > 0x0 {
 					trace.Log(p.name, "[recv]", "n:", n, "v:", m.Value())
 				}
-				atomic.AddInt64(&p.s, stateProcessing)
+				p.setState(stateProcessing)
 				p.In() <- m
 			}
 		}()
@@ -148,55 +163,59 @@ func (p *P) recv() {
 	wg.Wait()
 
 	close(p.strategy.In())
-	if p.t {
+	if p.o&optionTerminal > 0x0 {
 		close(p.out)
 	}
 }
 
 func (p *P) send() {
-	if p.l {
+	if p.o&optionLog > 0x0 {
 		trace.Log(p.name, "[sending...]")
 		defer trace.Log(p.name, "[sending completed]")
 	}
-	if p.t {
-		if p.l {
+	if p.o&optionTerminal > 0x0 {
+		if p.o&optionLog > 0x0 {
 			trace.Log(p.name, "[terminal place detected]")
 		}
-		if !p.k {
+		if p.o&optionKeep > 0x0 {
+			return
+		}
+		if p.o&optionLog > 0x0 {
 			trace.Log(p.name, "[utilising]")
-			for m := range p.strategy.Out() {
-				if p.l {
-					trace.Log(p.name, "[utilised]", "v:", m.Value())
-				}
-				m.passP(p)
+		}
+		for m := range p.strategy.Out() {
+			if p.o&optionLog > 0x0 {
+				trace.Log(p.name, "[utilised]", "v:", m.Value())
 			}
+			m.passP(p)
 		}
 		return
 	}
-	for atomic.LoadInt64(&p.s)&stateClosed == 0x0 {
+	for s := p.state(); (s&stateClosed)|(^s&stateProcessing) != (stateClosed | stateProcessing); s = p.state() {
 		select {
 		case m, ok := <-p.strategy.Out():
-			atomic.AddInt64(&p.s, -stateProcessing)
 			if !ok {
-				if p.l {
+				if p.o&optionLog > 0x0 {
 					trace.Log(p.name, "[sending broken value]")
 				}
-				atomic.AddInt64(&p.s, stateClosed)
+				p.setState(stateClosed)
+				p.unsetState(stateProcessing)
 				break
 			}
-			atomic.AddInt64(&p.s, stateReady)
+			p.setState(stateReady)
+			p.unsetState(stateProcessing)
 
 			m.passP(p)
-			if p.l {
+			if p.o&optionLog > 0x0 {
 				trace.Log(p.name, "[send]", "v:", m.Value())
 			}
 			p.out <- m
 
-			atomic.AddInt64(&p.s, -stateReady)
+			p.unsetState(stateReady)
 			p.mu.Unlock()
 		case <-p.ctx.Done():
-			atomic.AddInt64(&p.s, stateClosed)
-			if p.l {
+			p.setState(stateClosed)
+			if p.o&optionLog > 0x0 {
 				trace.Log(p.name, "[sending context deadline]")
 			}
 		}
@@ -205,10 +224,10 @@ func (p *P) send() {
 }
 
 const (
-	// stateProcessing means place is processing a token
-	stateProcessing = 1 << 0
 	// stateClosed means place is closed, and it doesn't process tokens
-	stateClosed = 1 << 1
+	stateClosed uint64 = 1 << 0
+	// stateProcessing means place is processing a token
+	stateProcessing uint64 = 1 << 1
 	// stateReady means place is ready to pass token forward
-	stateReady = 1 << 2
+	stateReady uint64 = 1 << 2
 )
