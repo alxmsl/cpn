@@ -1,8 +1,9 @@
 package test
 
 import (
-	"context"
 	. "gopkg.in/check.v1"
+
+	"context"
 
 	"github.com/alxmsl/cpn"
 	"github.com/alxmsl/cpn/strategies"
@@ -162,12 +163,8 @@ func (s *StrategiesSuite) TestJoinStrategy(c *C) {
 		Run()
 
 	// Writes several token to the PN concurrently
-	n.P("pin1").Send(cpn.NewM("initial value 1"))
-	n.P("pin2").Send(cpn.NewM("initial value 2"))
-
-	// @todo: temporary commented
-	//n.P("pin1").Close()
-	//n.P("pin2").Close()
+	n.P("pin1").In() <- cpn.NewM("initial value")
+	n.P("pin2").In() <- cpn.NewM("initial value")
 	cancel()
 
 	// Expects an aggregated token

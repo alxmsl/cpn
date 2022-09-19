@@ -2,7 +2,6 @@ package cpn
 
 import (
 	"context"
-	"github.com/alxmsl/cpn/trace"
 	"sync"
 	"sync/atomic"
 
@@ -39,12 +38,15 @@ type P struct {
 
 	// State flags for an abstract place:
 	//  - i means an initial place in the PN. Initial place doesn't have incoming edges
-	//  - k means to don't clean up Strategy object in the terminal place. This is used for test purposes
-	//  - l means need to log an entity behaviour
 	//  - t means a terminal place in the PN. Terminal place doesn't have outgoing edges
-	i, k, l, t bool
+	//  - k means to don't clean up Strategy object in the terminal place. This is used for test purposes
+	i, t, k bool
 
-	// s keeps an internal state for the place. See state constants for details
+	// s keeps an internal state for the place:
+	//  - stateActive means place started receiving tokens (@todo: probably, we don't need this state)
+	//  - stateClosed means place stopped sending tokens. Reasons: Strategy object stopped working or the place
+	//    context deadline exceeded
+	//  - stateReady means place is ready to accept tokens
 	s int64
 }
 
@@ -58,7 +60,6 @@ func NewP(name string) *P {
 		out: make(chan *M),
 
 		i: true,
-		l: trace.NeedLog(name),
 		t: true,
 	}
 }
@@ -89,58 +90,29 @@ func (p *P) Out() <-chan *M {
 	return p.strategy.Out()
 }
 
-func (p *P) Send(m *M) {
-	if p.l {
-		trace.Log(p.name, "[recv (direct)]", "v:", m.Value())
-	}
-	atomic.AddInt64(&p.s, stateProcessing)
-	p.In() <- m
-}
-
 func (p *P) ready() bool {
 	s := atomic.LoadInt64(&p.s)
 	return s&(stateReady|stateClosed) > 0x0
 }
 
 func (p *P) run() {
-	if p.l {
-		trace.Log(p.name, "[running...]", "i:", p.i, "k:", p.k, "t:", p.t)
-		defer trace.Log(p.name, "[running completed]")
-	}
 	p.strategy.Run()
 }
 
 func (p *P) recv() {
-	if p.l {
-		trace.Log(p.name, "[receiving...]")
-		defer trace.Log(p.name, "[receiving completed]")
-	}
-
+	atomic.AddInt64(&p.s, stateActive)
 	if p.i {
-		if p.l {
-			trace.Log(p.name, "[initial place detected]")
-		}
 		return
 	}
 
 	wg := &sync.WaitGroup{}
 	wg.Add(p.ins.Len())
 	p.ins.Over(func(i int, n string, v interface{}) bool {
-		if p.l {
-			trace.Log(p.name, "[listening...]", "n:", n)
-		}
 		go func() {
-			if p.l {
-				defer trace.Log(p.name, "[stop listening]", "n:", n)
-			}
 			defer wg.Done()
 			for m := range v.(chan *M) {
 				m.passP(p)
-				if p.l {
-					trace.Log(p.name, "[recv]", "n:", n, "v:", m.Value())
-				}
-				atomic.AddInt64(&p.s, stateProcessing)
-				p.In() <- m
+				p.strategy.In() <- m
 			}
 		}()
 		return true
@@ -154,20 +126,9 @@ func (p *P) recv() {
 }
 
 func (p *P) send() {
-	if p.l {
-		trace.Log(p.name, "[sending...]")
-		defer trace.Log(p.name, "[sending completed]")
-	}
 	if p.t {
-		if p.l {
-			trace.Log(p.name, "[terminal place detected]")
-		}
 		if !p.k {
-			trace.Log(p.name, "[utilising]")
 			for m := range p.strategy.Out() {
-				if p.l {
-					trace.Log(p.name, "[utilised]", "v:", m.Value())
-				}
 				m.passP(p)
 			}
 		}
@@ -176,39 +137,26 @@ func (p *P) send() {
 	for atomic.LoadInt64(&p.s)&stateClosed == 0x0 {
 		select {
 		case m, ok := <-p.strategy.Out():
-			atomic.AddInt64(&p.s, -stateProcessing)
 			if !ok {
-				if p.l {
-					trace.Log(p.name, "[sending broken value]")
-				}
 				atomic.AddInt64(&p.s, stateClosed)
 				break
 			}
 			atomic.AddInt64(&p.s, stateReady)
 
 			m.passP(p)
-			if p.l {
-				trace.Log(p.name, "[send]", "v:", m.Value())
-			}
 			p.out <- m
 
 			atomic.AddInt64(&p.s, -stateReady)
 			p.mu.Unlock()
 		case <-p.ctx.Done():
 			atomic.AddInt64(&p.s, stateClosed)
-			if p.l {
-				trace.Log(p.name, "[sending context deadline]")
-			}
 		}
 	}
 	close(p.out)
 }
 
 const (
-	// stateProcessing means place is processing a token
-	stateProcessing = 1 << 0
-	// stateClosed means place is closed, and it doesn't process tokens
+	stateActive = 1 << 0
 	stateClosed = 1 << 1
-	// stateReady means place is ready to pass token forward
-	stateReady = 1 << 2
+	stateReady  = 1 << 2
 )
