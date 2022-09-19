@@ -62,11 +62,11 @@ func printQueueLength() {
 func newPushPN() *cpn.PN {
 	n := cpn.NewPN()
 	n.P("pin", cpn.WithContext(context.Background()),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
-	n.T("t", cpn.WithFunction(transition.First))
+	n.T("t", cpn.WithTransformation(transition.First))
 	n.P("queue", cpn.WithContext(context.Background()),
-		cpn.WithPlaceBuilder(redis.NewPush,
+		cpn.WithStrategyBuilder(redis.NewPush,
 			redis.PoolOption(pool),
 			redis.KeyOption("my_queue"),
 			redis.MarshallerOption(redis.JsonMarshal),
@@ -74,7 +74,7 @@ func newPushPN() *cpn.PN {
 	)
 	n.P("print",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(io.NewWriter(io.WriterOption(os.Stdout))),
+		cpn.WithStrategy(io.NewWriter(io.WriterOption(os.Stdout))),
 	)
 	n.
 		PT("pin", "t").
@@ -92,17 +92,17 @@ func newPushPN() *cpn.PN {
 func newPopPN() *cpn.PN {
 	n := cpn.NewPN()
 	n.P("queue", cpn.WithContext(context.Background()),
-		cpn.WithPlaceBuilder(redis.NewPop,
+		cpn.WithStrategyBuilder(redis.NewPop,
 			redis.PoolOption(pool),
 			redis.KeyOption("my_queue"),
 			redis.TypeOption(reflect.TypeOf(MyType(0))),
 			redis.UnmarshallerOption(redis.JsonUnmarshal),
 		),
 	)
-	n.T("t", cpn.WithFunction(transition.First))
+	n.T("t", cpn.WithTransformation(transition.First))
 	n.P("print",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(io.NewWriter(io.WriterOption(os.Stdout))),
+		cpn.WithStrategy(io.NewWriter(io.WriterOption(os.Stdout))),
 	)
 	n.
 		PT("queue", "t").

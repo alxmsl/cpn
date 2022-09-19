@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// The M struct represents a mark of Petri Net
+// M is an abstraction to define a token in PN
 type M struct {
 	c time.Time
 	// v contains the current mark value
@@ -51,12 +51,12 @@ func (m *M) History() []*E {
 // passP is called when the mark passed place in the net
 func (m *M) passP(p *P) {
 	m.lock.RLock()
-	if len(m.path) == 0 || m.path[len(m.path)-1].N != p.n {
+	if len(m.path) == 0 || m.path[len(m.path)-1].N != p.name {
 		m.lock.RUnlock()
 		m.lock.Lock()
 		defer m.lock.Unlock()
-		if len(m.path) == 0 || m.path[len(m.path)-1].N != p.n {
-			m.path = append(m.path, &E{time.Now(), p.n})
+		if len(m.path) == 0 || m.path[len(m.path)-1].N != p.name {
+			m.path = append(m.path, &E{time.Now(), p.name})
 			if m.v != nil {
 				m.vv = append(m.vv, &v{p, m.v})
 				m.v = nil
@@ -78,8 +78,8 @@ func (m *M) passP(p *P) {
 func (m *M) passT(t *T) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
-	m.path = append(m.path, &E{time.Now(), t.n})
-	m.word = append(m.word, t.n)
+	m.path = append(m.path, &E{time.Now(), t.name})
+	m.word = append(m.word, t.name)
 }
 
 func (m *M) Path() []*E {
@@ -115,7 +115,7 @@ func (m *M) ValueByPlace(name string, deep int) interface{} {
 		if name == "" {
 			return m.vv[i].v
 		}
-		if m.vv[i].p.n == name {
+		if m.vv[i].p.name == name {
 			if c == deep {
 				return m.vv[i].v
 			}

@@ -15,24 +15,24 @@ func main() {
 	n := cpn.NewPN()
 	n.P("req",
 		cpn.WithContext(ctx),
-		cpn.WithPlaceBuilder(http.NewRequest,
+		cpn.WithStrategyBuilder(http.NewRequest,
 			http.AddressOption("127.0.0.1:8080"),
 			http.PatternOption("/"),
 			place.CancelOption(cancel),
 		),
 	)
 	n.T("echo",
-		cpn.WithFunction(http.Processor(func(ctx *http.RequestContext) {
+		cpn.WithTransformation(http.Processor(func(ctx *http.RequestContext) {
 			_ = ctx.Request().Write(ctx.Response())
 		})),
 	)
 	n.P("res",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(http.NewResponse()),
+		cpn.WithStrategy(http.NewResponse()),
 	)
 	n.P("log",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(io.NewWriter(io.WriterOption(os.Stdout))),
+		cpn.WithStrategy(io.NewWriter(io.WriterOption(os.Stdout))),
 	)
 	n.
 		PT("req", "echo").

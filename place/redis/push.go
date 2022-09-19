@@ -15,7 +15,7 @@ type Push struct {
 	pool *radix.Pool
 }
 
-func NewPush(opts ...cpn.PlaceOption) cpn.Place {
+func NewPush(opts ...cpn.StrategyOption) cpn.Strategy {
 	p := &Push{
 		chin:  make(chan *cpn.M),
 		chout: make(chan *cpn.M),

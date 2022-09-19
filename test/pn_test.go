@@ -1,6 +1,7 @@
 package test
 
 import (
+	"github.com/alxmsl/cpn/strategies"
 	. "gopkg.in/check.v1"
 
 	"bytes"
@@ -10,7 +11,6 @@ import (
 	"testing"
 
 	"github.com/alxmsl/cpn"
-	"github.com/alxmsl/cpn/place"
 	"github.com/alxmsl/cpn/place/io"
 	"github.com/alxmsl/cpn/place/memory"
 	"github.com/alxmsl/cpn/transition"
@@ -30,12 +30,12 @@ func (s *PNSuite) TestPTP(c *C) {
 	n := cpn.NewPN()
 	n.P("pin",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
-	n.T("t1", cpn.WithFunction(transition.First))
+	n.T("t1", cpn.WithTransformation(transition.First))
 	n.P("pout",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 		cpn.WithKeep(true),
 	)
 	n.
@@ -79,13 +79,13 @@ func (s *PNSuite) TestPTTP(c *C) {
 	n := cpn.NewPN()
 	n.P("pin",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
-	n.T("t1", cpn.WithFunction(transition.First))
-	n.T("t2", cpn.WithFunction(transition.First))
+	n.T("t1", cpn.WithTransformation(transition.First))
+	n.T("t2", cpn.WithTransformation(transition.First))
 	n.P("pout",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 		cpn.WithKeep(true),
 	)
 	n.
@@ -130,17 +130,17 @@ func (s *PNSuite) TestPTPP(c *C) {
 	n := cpn.NewPN()
 	n.P("pin",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
-	n.T("t", cpn.WithFunction(transition.First))
+	n.T("t", cpn.WithTransformation(transition.First))
 	n.P("pout1",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 		cpn.WithKeep(true),
 	)
 	n.P("pout2",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 		cpn.WithKeep(true),
 	)
 	n.
@@ -188,16 +188,16 @@ func (s *PNSuite) TestPPTP(c *C) {
 	n := cpn.NewPN()
 	n.P("p1",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
 	n.P("p2",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
-	n.T("t1", cpn.WithFunction(transition.First))
+	n.T("t1", cpn.WithTransformation(transition.First))
 	n.P("pout",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 		cpn.WithKeep(true),
 	)
 	n.
@@ -246,17 +246,17 @@ func (s *PNSuite) TestPPTTP(c *C) {
 	n := cpn.NewPN()
 	n.P("p1",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
 	n.P("p2",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
-	n.T("t1", cpn.WithFunction(transition.First))
-	n.T("t2", cpn.WithFunction(transition.First))
+	n.T("t1", cpn.WithTransformation(transition.First))
+	n.T("t2", cpn.WithTransformation(transition.First))
 	n.P("pout",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 		cpn.WithKeep(true),
 	)
 	n.
@@ -309,12 +309,12 @@ func (s *PNSuite) TestPrintNet(c *C) {
 	n := cpn.NewPN()
 	n.P("pin",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
-	n.T("t1", cpn.WithFunction(transition.First))
+	n.T("t1", cpn.WithTransformation(transition.First))
 	n.P("pout",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(io.NewWriter(io.WriterOption(w))),
+		cpn.WithStrategy(io.NewWriter(io.WriterOption(w))),
 	)
 	n.
 		PT("pin", "t1").
@@ -333,25 +333,27 @@ func (s *PNSuite) TestMultipleValues(c *C) {
 	var n = cpn.NewPN()
 	n.P("p1",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
-	n.T("t1", cpn.WithFunction(transition.First))
+	n.T("t1", cpn.WithTransformation(transition.First))
 	n.P("p2",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(place.NewPass(place.PassFuncOption(
-			func(ctx context.Context, m *cpn.M) {
+		cpn.WithStrategy(strategies.NewPass(strategies.PassFuncOption(
+			func(ctx context.Context, m *cpn.M) *cpn.M {
 				m.SetValue("overwritten value from p2")
 				m.SetValue("value from p2")
+				return m
 			},
 		))),
 	)
-	n.T("t2", cpn.WithFunction(transition.First))
+	n.T("t2", cpn.WithTransformation(transition.First))
 	n.P("p3",
 		cpn.WithContext(context.Background()),
-		cpn.WithPlace(place.NewPass(place.PassFuncOption(
-			func(ctx context.Context, m *cpn.M) {
+		cpn.WithStrategy(strategies.NewPass(strategies.PassFuncOption(
+			func(ctx context.Context, m *cpn.M) *cpn.M {
 				m.SetValue("overwritten value from p3")
 				m.SetValue("value from p3")
+				return m
 			},
 		))),
 	)

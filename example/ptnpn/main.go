@@ -17,12 +17,12 @@ func main() {
 	n := cpn.NewPN()
 	n.P("pin",
 		cpn.WithContext(ctx),
-		cpn.WithPlace(memory.NewBlock()),
+		cpn.WithStrategy(memory.NewBlock()),
 	)
-	n.Tn(places, "t_", cpn.WithFunction(transition.First))
+	n.Tn(places, "t_", cpn.WithTransformation(transition.First))
 	n.Pn(places, "p_",
 		cpn.WithContext(ctx),
-		cpn.WithPlaceBuilder(memory.NewBlock),
+		cpn.WithStrategyBuilder(memory.NewBlock),
 	)
 	n.
 		PTn(places, "pin", "t_").

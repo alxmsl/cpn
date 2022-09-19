@@ -3,31 +3,47 @@ package cpn
 import (
 	"runtime"
 
+	"github.com/alxmsl/cpn/trace"
+
 	"github.com/alxmsl/prmtvs/skm"
 )
 
-type Transition func(in []*M) *M
+// Transformation defines a custom behaviour for a transition
+type Transformation func(in []*M) *M
 
+// T implements an abstract transition in PN
 type T struct {
-	n string
+	// name is a transition name in the PN. This is good to have it unique
+	name string
 
-	ins  *skm.SKM
+	// transformation defines behaviour for the transition. Transition awaits tokens from each incoming edge. All tokens
+	// are passed to the transformation. Transformation returns a token which will be passed to the following places
+	transformation Transformation
+
+	// ins is a sorted set of incoming edges
+	ins *skm.SKM
+	// outs is a sorted set of outgoing edges
 	outs *skm.SKM
 
-	fn Transition
+	// o keeps a static options flags for an abstract transition. See options constants for details
+	o uint64
 }
 
+// NewT creates a new transition with required name
 func NewT(name string) *T {
-	t := &T{
-		n: name,
+	var t = &T{
+		name: name,
 
 		ins:  skm.NewSKM(),
 		outs: skm.NewSKM(),
 	}
+	if trace.NeedLog(t.name) {
+		t.o &= optionLog
+	}
 	return t
 }
 
-func (t *T) SetOptions(opts ...TOpt) *T {
+func (t *T) SetOptions(opts ...TransitionOption) *T {
 	for _, opt := range opts {
 		opt.Apply(t)
 	}
@@ -35,12 +51,12 @@ func (t *T) SetOptions(opts ...TOpt) *T {
 }
 
 func (t *T) Name() string {
-	return t.n
+	return t.name
 }
 
 func (t *T) inslock() {
 	t.ins.Over(func(i int, n string, v interface{}) bool {
-		v.(*P).lock.Lock()
+		v.(*P).mu.Lock()
 		return true
 	})
 }
@@ -60,12 +76,16 @@ func (t *T) insready() bool {
 
 func (t *T) insunlock() {
 	t.ins.Over(func(i int, n string, v interface{}) bool {
-		v.(*P).lock.Unlock()
+		v.(*P).mu.Unlock()
 		return true
 	})
 }
 
 func (t *T) run() {
+	if t.o&optionLog > 0x0 {
+		trace.Log(t.name, "[runinng...]")
+		defer trace.Log(t.name, "[running completed]")
+	}
 	for {
 		t.inslock()
 		if !t.insready() {
@@ -84,8 +104,11 @@ func (t *T) run() {
 			t.insunlock()
 			break
 		}
+		if t.o&optionLog > 0x0 {
+			trace.Log(t.name, "[recv]", "len:", len(mm))
+		}
 
-		m := t.fn(mm)
+		m := t.transformation(mm)
 		m.passT(t)
 
 		t.outs.Over(func(i int, n string, v interface{}) bool {
@@ -93,6 +116,9 @@ func (t *T) run() {
 			in.(chan *M) <- m
 			return true
 		})
+		if t.o&optionLog > 0x0 {
+			trace.Log(t.name, "[xfer]", "v:", m.Value())
+		}
 	}
 
 	t.outs.Over(func(i int, n string, v interface{}) bool {
