@@ -3,6 +3,8 @@ package cpn
 import (
 	"runtime"
 
+	"github.com/alxmsl/cpn/trace"
+
 	"github.com/alxmsl/prmtvs/skm"
 )
 
@@ -22,6 +24,10 @@ type T struct {
 	ins *skm.SKM
 	// outs is a sorted set of outgoing edges
 	outs *skm.SKM
+
+	// State flags for an abstract transition:
+	//  - l means need to log an entity behaviour
+	l bool
 }
 
 // NewT creates a new transition with required name
@@ -31,6 +37,8 @@ func NewT(name string) *T {
 
 		ins:  skm.NewSKM(),
 		outs: skm.NewSKM(),
+
+		l: trace.NeedLog(name),
 	}
 }
 
@@ -73,6 +81,10 @@ func (t *T) insunlock() {
 }
 
 func (t *T) run() {
+	if t.l {
+		trace.Log(t.name, "[runinng...]")
+		defer trace.Log(t.name, "[running completed]")
+	}
 	for {
 		t.inslock()
 		if !t.insready() {
@@ -91,6 +103,9 @@ func (t *T) run() {
 			t.insunlock()
 			break
 		}
+		if t.l {
+			trace.Log(t.name, "[recv]", "len:", len(mm))
+		}
 
 		m := t.transformation(mm)
 		m.passT(t)
@@ -100,6 +115,9 @@ func (t *T) run() {
 			in.(chan *M) <- m
 			return true
 		})
+		if t.l {
+			trace.Log(t.name, "[xfer]", "v:", m.Value())
+		}
 	}
 
 	t.outs.Over(func(i int, n string, v interface{}) bool {
