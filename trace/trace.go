@@ -23,17 +23,24 @@ func init() {
 }
 
 func Log(n string, ss ...interface{}) {
+	log.Println(args(n, ss...)...)
+	return
+}
+
+func Logf(format string, n string, ss ...interface{}) {
 	if !NeedLog(n) {
 		return
 	}
+	log.Printf(format, args(n, ss...)...)
+}
 
+func args(n string, ss ...interface{}) []interface{} {
 	var aa = make([]interface{}, 0, len(ss)+1)
 	aa = append(aa, n)
 	for _, s := range ss {
 		aa = append(aa, s)
 	}
-	log.Println(aa...)
-	return
+	return aa
 }
 
 func NeedLog(n string) bool {

@@ -25,21 +25,22 @@ type T struct {
 	// outs is a sorted set of outgoing edges
 	outs *skm.SKM
 
-	// State flags for an abstract transition:
-	//  - l means need to log an entity behaviour
-	l bool
+	// o keeps a static options flags for an abstract transition. See options constants for details
+	o uint64
 }
 
 // NewT creates a new transition with required name
 func NewT(name string) *T {
-	return &T{
+	var t = &T{
 		name: name,
 
 		ins:  skm.NewSKM(),
 		outs: skm.NewSKM(),
-
-		l: trace.NeedLog(name),
 	}
+	if trace.NeedLog(t.name) {
+		t.o &= optionLog
+	}
+	return t
 }
 
 func (t *T) SetOptions(opts ...TransitionOption) *T {
@@ -81,7 +82,7 @@ func (t *T) insunlock() {
 }
 
 func (t *T) run() {
-	if t.l {
+	if t.o&optionLog > 0x0 {
 		trace.Log(t.name, "[runinng...]")
 		defer trace.Log(t.name, "[running completed]")
 	}
@@ -103,7 +104,7 @@ func (t *T) run() {
 			t.insunlock()
 			break
 		}
-		if t.l {
+		if t.o&optionLog > 0x0 {
 			trace.Log(t.name, "[recv]", "len:", len(mm))
 		}
 
@@ -115,7 +116,7 @@ func (t *T) run() {
 			in.(chan *M) <- m
 			return true
 		})
-		if t.l {
+		if t.o&optionLog > 0x0 {
 			trace.Log(t.name, "[xfer]", "v:", m.Value())
 		}
 	}
