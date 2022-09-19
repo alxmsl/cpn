@@ -41,7 +41,7 @@ type P struct {
 	o uint64
 
 	// s keeps a dynamic state for the place. See state constants for details
-	s uint64
+	s state
 }
 
 // NewP creates a new place with specific name. By default, place is both initial and terminal. When place is linked to
@@ -91,30 +91,12 @@ func (p *P) Send(m *M) {
 	if p.o&optionLog > 0x0 {
 		trace.Log(p.name, "[recv (direct)]", "v:", m.Value())
 	}
-	p.setState(stateProcessing)
+	p.s.or(stateProcessing)
 	p.In() <- m
 }
 
-func (p *P) setState(state uint64) {
-	p.lock.Lock()
-	defer p.lock.Unlock()
-	p.s |= state
-}
-
-func (p *P) unsetState(state uint64) {
-	p.lock.Lock()
-	defer p.lock.Unlock()
-	p.s &= ^state
-}
-
-func (p *P) state() uint64 {
-	p.lock.RLock()
-	defer p.lock.RUnlock()
-	return p.s
-}
-
 func (p *P) ready() bool {
-	return p.state()&(stateReady|stateClosed) > 0x0
+	return p.s.state()&(stateReady|stateClosed) > 0x0
 }
 
 func (p *P) run() {
@@ -154,7 +136,7 @@ func (p *P) recv() {
 				if p.o&optionLog > 0x0 {
 					trace.Log(p.name, "[recv]", "n:", n, "v:", m.Value())
 				}
-				p.setState(stateProcessing)
+				p.s.or(stateProcessing)
 				p.In() <- m
 			}
 		}()
@@ -191,19 +173,17 @@ func (p *P) send() {
 		}
 		return
 	}
-	for s := p.state(); (s&stateClosed)|(^s&stateProcessing) != (stateClosed | stateProcessing); s = p.state() {
+	for s := p.s.state(); (s&stateClosed)|(^s&stateProcessing) != (stateClosed | stateProcessing); s = p.s.state() {
 		select {
 		case m, ok := <-p.strategy.Out():
 			if !ok {
 				if p.o&optionLog > 0x0 {
 					trace.Log(p.name, "[sending broken value]")
 				}
-				p.setState(stateClosed)
-				p.unsetState(stateProcessing)
+				p.s.andnotor(stateProcessing, stateClosed)
 				break
 			}
-			p.setState(stateReady)
-			p.unsetState(stateProcessing)
+			p.s.andnotor(stateProcessing, stateReady)
 
 			m.passP(p)
 			if p.o&optionLog > 0x0 {
@@ -211,10 +191,10 @@ func (p *P) send() {
 			}
 			p.out <- m
 
-			p.unsetState(stateReady)
+			p.s.andnot(stateReady)
 			p.mu.Unlock()
 		case <-p.ctx.Done():
-			p.setState(stateClosed)
+			p.s.or(stateClosed)
 			if p.o&optionLog > 0x0 {
 				trace.Log(p.name, "[sending context deadline]")
 			}
@@ -222,12 +202,3 @@ func (p *P) send() {
 	}
 	close(p.out)
 }
-
-const (
-	// stateClosed means place is closed, and it doesn't process tokens
-	stateClosed uint64 = 1 << 0
-	// stateProcessing means place is processing a token
-	stateProcessing uint64 = 1 << 1
-	// stateReady means place is ready to pass token forward
-	stateReady uint64 = 1 << 2
-)

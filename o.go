@@ -1,6 +1,9 @@
 package cpn
 
-import "context"
+import (
+	"context"
+	"sync"
+)
 
 const (
 	// optionInitial means an initial place in the PN. Initial place doesn't have incoming edges
@@ -13,6 +16,45 @@ const (
 	// optionTerminal means a terminal place in the PN. Terminal place doesn't have outgoing edges
 	optionTerminal uint64 = 1 << 3
 )
+
+const (
+	// stateClosed means place is closed, and it doesn't process tokens
+	stateClosed uint64 = 1 << 0
+	// stateProcessing means place is processing a token
+	stateProcessing uint64 = 1 << 1
+	// stateReady means place is ready to pass token forward
+	stateReady uint64 = 1 << 2
+)
+
+type state struct {
+	sync.RWMutex
+	v uint64
+}
+
+func (s *state) andnotor(andnot, or uint64) {
+	s.Lock()
+	defer s.Unlock()
+	s.v &= ^andnot
+	s.v |= or
+}
+
+func (s *state) andnot(v uint64) {
+	s.Lock()
+	defer s.Unlock()
+	s.v &= ^v
+}
+
+func (s *state) or(v uint64) {
+	s.Lock()
+	defer s.Unlock()
+	s.v |= v
+}
+
+func (s *state) state() uint64 {
+	s.RLock()
+	defer s.RUnlock()
+	return s.v
+}
 
 // PlaceOption is an abstraction to define place options
 type PlaceOption interface {
