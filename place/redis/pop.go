@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/alxmsl/cpn"
@@ -53,7 +54,7 @@ func (p *Pop) SetType(t reflect.Type) {
 	p.t = t
 }
 
-func (p *Pop) Run() {
+func (p *Pop) Run(_ context.Context) {
 	defer close(p.chout)
 	var (
 		err error

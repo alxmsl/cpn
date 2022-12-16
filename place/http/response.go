@@ -1,6 +1,10 @@
 package http
 
-import "github.com/alxmsl/cpn"
+import (
+	"context"
+
+	"github.com/alxmsl/cpn"
+)
 
 type Response struct {
 	chin  chan *cpn.M
@@ -22,7 +26,7 @@ func (p *Response) Out() <-chan *cpn.M {
 	return p.chout
 }
 
-func (p *Response) Run() {
+func (p *Response) Run(_ context.Context) {
 	defer close(p.chout)
 	for m := range p.chin {
 		m.Value().(*RequestContext).Flush()

@@ -62,7 +62,7 @@ func (p *Request) SetCancel(cancel context.CancelFunc) {
 	p.cancel = cancel
 }
 
-func (p *Request) Run() {
+func (p *Request) Run(_ context.Context) {
 	defer close(p.chout)
 	http.HandleFunc(p.pattern, func(w http.ResponseWriter, r *http.Request) {
 		ctx := &RequestContext{

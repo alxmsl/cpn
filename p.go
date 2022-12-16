@@ -13,7 +13,7 @@ import (
 type Strategy interface {
 	In() chan<- *M
 	Out() <-chan *M
-	Run()
+	Run(context.Context)
 }
 
 // P implements an abstract place in PN
@@ -104,7 +104,7 @@ func (p *P) run() {
 		trace.Logf("%s [running...] o:%064b\n", p.name, p.o)
 		defer trace.Log(p.name, "[running completed]")
 	}
-	p.strategy.Run()
+	p.strategy.Run(p.ctx)
 }
 
 func (p *P) recv() {
