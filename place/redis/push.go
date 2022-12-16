@@ -1,6 +1,8 @@
 package redis
 
 import (
+	"context"
+
 	"github.com/alxmsl/cpn"
 	"github.com/mediocregopher/radix/v3"
 )
@@ -46,7 +48,7 @@ func (p *Push) SetPool(pool *radix.Pool) {
 	p.pool = pool
 }
 
-func (p *Push) Run() {
+func (p *Push) Run(_ context.Context) {
 	defer close(p.chout)
 	for m := range p.chin {
 		v, err := p.f(m.Value())

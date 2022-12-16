@@ -1,6 +1,7 @@
 package io
 
 import (
+	"context"
 	"fmt"
 	"io"
 
@@ -45,7 +46,7 @@ func NewWriter(opts ...cpn.StrategyOption) cpn.Strategy {
 	return p
 }
 
-func (p *Writer) Run() {
+func (p *Writer) Run(_ context.Context) {
 	defer close(p.chout)
 	for m := range p.chin {
 		if str, ok := m.Value().(fmt.Stringer); ok {

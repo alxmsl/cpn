@@ -1,6 +1,10 @@
 package memory
 
-import "github.com/alxmsl/cpn"
+import (
+	"context"
+
+	"github.com/alxmsl/cpn"
+)
 
 const defaultLength = 1
 
@@ -32,7 +36,7 @@ func NewQueue(opts ...cpn.StrategyOption) cpn.Strategy {
 	return p
 }
 
-func (b Queue) Run() {}
+func (b Queue) Run(_ context.Context) {}
 
 func (q Queue) In() chan<- *cpn.M {
 	return q.q

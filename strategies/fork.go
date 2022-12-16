@@ -50,9 +50,9 @@ func (p *fork) Out() <-chan *cpn.M {
 	return p.chout
 }
 
-func (p *fork) Run() {
+func (p *fork) Run(ctx context.Context) {
 	defer close(p.chout)
 	for m := range p.chin {
-		p.f(context.Background(), m, p.chout)
+		p.f(ctx, m, p.chout)
 	}
 }

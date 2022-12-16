@@ -50,7 +50,7 @@ func (p *join) Out() <-chan *cpn.M {
 	return p.chout
 }
 
-func (p *join) Run() {
+func (p *join) Run(ctx context.Context) {
 	defer close(p.chout)
-	p.chout <- p.f(context.Background(), p.chin)
+	p.chout <- p.f(ctx, p.chin)
 }

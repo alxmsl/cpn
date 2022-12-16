@@ -50,9 +50,9 @@ func (p *pass) Out() <-chan *cpn.M {
 	return p.chout
 }
 
-func (p *pass) Run() {
+func (p *pass) Run(ctx context.Context) {
 	defer close(p.chout)
 	for m := range p.chin {
-		p.chout <- p.f(context.Background(), m)
+		p.chout <- p.f(ctx, m)
 	}
 }
