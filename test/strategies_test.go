@@ -1,9 +1,10 @@
 package test
 
 import (
-	"context"
-
 	. "gopkg.in/check.v1"
+
+	"context"
+	"time"
 
 	"github.com/alxmsl/cpn"
 	"github.com/alxmsl/cpn/strategies"
@@ -220,4 +221,78 @@ func (s *StrategiesSuite) TestPassStrategy(c *C) {
 	c.Assert(m.Word(), HasLen, 2)
 	c.Assert(m.Word()[0], Equals, "t1")
 	c.Assert(m.Word()[1], Equals, "t2")
+}
+
+func (s *StrategiesSuite) TestForkStrategyWithCancel(c *C) {
+	timeout := 1 * time.Second
+	var n = cpn.NewPN()
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		time.Sleep(timeout)
+		cancel()
+	}()
+	n.P("pin",
+		cpn.WithContext(ctx),
+		cpn.WithStrategy(strategies.NewFork(strategies.ForkFuncOption(
+			func(ctx context.Context, m *cpn.M, ch chan<- *cpn.M) {
+				ch <- m
+			},
+		))),
+	)
+
+	// The first branch
+	n.T("t1", cpn.WithTransformation(transition.First))
+	n.P("p1",
+		cpn.WithContext(ctx),
+		cpn.WithStrategy(strategies.NewPass(strategies.PassFuncOption(
+			func(ctx context.Context, m *cpn.M) *cpn.M {
+				m.SetValue(m.Value().(int))
+				return m
+			},
+		))),
+	)
+
+	n.T("t2", cpn.WithTransformation(transition.First))
+	n.P("pout",
+		cpn.WithContext(ctx),
+		cpn.WithStrategy(strategies.NewPass(strategies.PassFuncOption(
+			func(ctx context.Context, m *cpn.M) *cpn.M {
+				m.SetValue(m.Value().(int))
+				return m
+			},
+		))),
+		cpn.WithKeep(true),
+	)
+
+	n.
+		PT("pin", "t1").
+		TP("t1", "p1").
+		PT("p1", "t2").
+		TP("t2", "pout").
+		Run()
+
+	const numInput = 3
+	for i := 0; i < numInput; i++ {
+		n.P("pin").In() <- cpn.NewM(i)
+	}
+
+	go func() {
+		time.Sleep(2 * timeout)
+		n.P("pin").In() <- cpn.NewM(3) // should not be processed
+		n.P("pin").Close()
+	}()
+
+	// Checks tokens are passed the PN in general
+	cnt := 0
+	for m := range n.P("pout").Out() {
+		c.Assert(m.Word(), HasLen, 2)
+		c.Assert(m.Word()[0], Equals, "t1")
+		c.Assert(m.Word()[1], Equals, "t2")
+		c.Assert(m.Value(), NotNil)
+		v, ok := m.Value().(int)
+		c.Assert(ok, Equals, true)
+		c.Assert(v, Equals, cnt)
+		c.Assert(cnt < numInput, Equals, true)
+		cnt++
+	}
 }

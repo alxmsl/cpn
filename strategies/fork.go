@@ -2,6 +2,9 @@ package strategies
 
 import (
 	"context"
+	"fmt"
+
+	ctx_pkg "github.com/alxmsl/cpn/context"
 
 	"github.com/alxmsl/cpn"
 )
@@ -52,7 +55,17 @@ func (p *fork) Out() <-chan *cpn.M {
 
 func (p *fork) Run(ctx context.Context) {
 	defer close(p.chout)
+	dCtx := ctx_pkg.Detach(ctx)
+	skip := false
 	for m := range p.chin {
-		p.f(ctx, m, p.chout)
+		select {
+		case <-ctx.Done():
+			fmt.Println(">>> DONE")
+			skip = true
+		default:
+		}
+		if !skip {
+			p.f(dCtx, m, p.chout)
+		}
 	}
 }
